@@ -73,8 +73,8 @@ cp index.html strength-log.html
 
 ## ホスティング
 
-- GitHubリポジトリ: https://github.com/ryootakeyaki/strength-log （Public）
-- GitHub Pages公開URL: https://ryootakeyaki.github.io/strength-log/
+- GitHubリポジトリ: https://github.com/TimeToBulkUp/strength-log （Public）
+- GitHub Pages公開URL: https://timetobulkup.github.io/strength-log/
 - pushすると数分でPagesに反映される。`sugano-bundle.local.js` はpushされないので、公開版は常にデータなしの汎用アプリとして動く。
 
 ## やらないこと / 注意
