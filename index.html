@@ -1065,6 +1065,12 @@
     const tVol=todayExVol(exId);
     const s=planFor(exId);
 
+    // 入力欄の初期値を、次のセットの目安（=前回の記録がベース）に合わせる
+    if(s.next){
+      document.getElementById("inWeight").value=s.next.weight;
+      document.getElementById("inReps").value=s.next.reps;
+    }
+
     let deltaHtml;
     if(prev && tVol>0){
       const diff=tVol-prev.vol;
