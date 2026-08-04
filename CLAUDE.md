@@ -4,10 +4,11 @@
 
 ## これは何か
 
-スマホで使う、筋トレ記録用の単一HTMLアプリ。`index.html` 一枚で完結しており、ビルド工程・依存パッケージ・フレームワークは一切ありません。バニラのHTML/CSS/JS。フォントだけGoogle Fonts (Oswald / Noto Sans JP) を読み込みます。
+スマホで使う、筋トレ記録用の単一HTMLアプリ。`index.html` 一枚で完結しており、ビルド工程・依存パッケージ・フレームワークは一切ありません。バニラのHTML/CSS/JS。外部読み込みはGoogle Fonts (Oswald / Noto Sans JP) と、Excel取り込み機能用のSheetJS (xlsx.js, CDN) のみ。
 
 - `index.html` — 本体（これを編集する）
 - `strength-log.html` — `index.html` と中身は完全に同一のコピー。**両方を常に一致させること**（片方だけ直すと不整合になる）。
+- `index.personal.html` — 個人データ埋め込み済みのローカル専用コピー（後述、`.gitignore`済み）。
 
 ## 実行・確認方法
 
@@ -35,16 +36,36 @@ node -e "const fs=require('fs');const h=fs.readFileSync('index.html','utf8');con
 `__name` は一覧が壊れても名前ごと復元できるよう、各ユーザーblobに自己記述として持たせている。消さないこと。
 
 ### 埋め込みデータ (SUGANO_BUNDLE)
-`<script id="sugano-bundle" src="sugano-bundle.local.js">` が、あるユーザー(菅野涼太)のExcelから変換した約4,290セットを読み込む。初回に一度だけ取り込まれる。**この4,290セットを破壊しないこと。** 破壊的変更をする関数（削除・マージ）は、必ず件数を確認してから。
+`<script id="sugano-bundle" src="sugano-bundle.local.js">` が、あるユーザー(菅野涼太)のExcelから変換したセット（4,000件超、随時Excel取り込みで増える）を読み込む。初回に一度だけ取り込まれる。**このデータを破壊しないこと。** 破壊的変更をする関数（削除・マージ）は、必ず件数を確認してから。
 
 **このファイルは `.gitignore` されており、Gitリポジトリには含まれない。** 実データは `sugano-bundle.local.js`（リポジトリ直下、ローカルのみ）に `window.SUGANO_BUNDLE={...}` の形で置かれている。理由: 本リポジトリはGitHub Pagesで公開しているため、実在する個人の名前とトレーニング記録をコミットすると誰でも閲覧できてしまう（過去に一度、公開リポジトリへ丸ごとコミットしてしまい、リポジトリを削除して作り直す事故があった）。
 - `index.html` / `strength-log.html` は空の参照タグだけを持つ。`sugano-bundle.local.js` が存在しない環境（GitHub Pages上の公開版や他人の端末）では単にスクリプトが404し、`window.SUGANO_BUNDLE` は `undefined` のまま → 通常の「データなし」の起動になる（既存のフォールバック処理で問題なく動く）。
 - **個人データを含むファイルを絶対にコミットしない。** 新しく個人データ的なものを埋め込む場合も、必ずこの「`.local.js`を`.gitignore`する」パターンに従うこと。
 
+### 個人用ファイル (index.personal.html)
+`index.html` と `sugano-bundle.local.js` を1回だけ合体させた自己完結型のスナップショット。OneDrive経由でスマホなど他端末からも開けるようにするためのもの（GitHub Pagesは個人アカウントでは非公開にできないため、データ入りのURLは絶対に公開しない設計）。`.gitignore`済み。
+- **自動更新されない。** `index.html` のコードや `sugano-bundle.local.js` のデータを更新したら、その都度作り直す必要がある（下記コマンド参照）。
+
+```bash
+# index.personal.html の再生成（<script id="sugano-bundle" src=...> の行番号を都度確認すること）
+grep -n 'id="sugano-bundle"' index.html
+head -n <その行-1> index.html > index.personal.html
+printf '<script id="sugano-bundle">' >> index.personal.html
+cat sugano-bundle.local.js >> index.personal.html
+printf '</script>\n' >> index.personal.html
+tail -n +<その行+1> index.html >> index.personal.html
+```
+
+### Excel取り込み機能
+ユーザー切り替え画面の「Excelファイルを取り込む」ボタンから、ユーザーが選んだ.xlsxファイルをブラウザ内でSheetJSでパースし、現在アクティブなプロフィールに安全にマージする（`parseWorkoutWorkbook` → `mergeIncoming`）。想定するExcel形式は各シートが `日付(M/D), 種目, TV(任意), weight, reps, weight2, reps2, ...` の列を持つもの（日付は縦方向に結合セルでも可＝空欄は直前の日付を引き継ぐ）。
+- `mergeIncoming` は埋め込みバンドルの取り込み(`maybeImport`)とファイル取り込み(`importExcelFile`)の両方で共有している同一のマージ処理。(種目, 日付, 重量, 回数)の組で重複排除するので、同じファイルを何度読み込んでも記録が増殖しない。
+- 重量は0.1kg単位でPythonの`round()`と同じ銀行丸め(`bankersRound1`)にしている。既存データの丸め方式と合わせるため、単純な四捨五入にしないこと。
+
 ## コードの地図（すべて index.html 内の1つのIIFE）
 
 - 保存層: `probeBackend / sGet / sSet / sDel / sList / save / saveMeta`
 - 読み込み: `loadMeta / loadUserData / reconcileUsers / recoverUsers / maybeImport / ensureData`
+- Excel取り込み: `parseWorkoutWorkbook / importExcelFile / mergeIncoming / bankersRound1`
 - 記録タブ: `renderSplitChips / renderSelects / renderInsight（前回比較テーブル+目安）/ renderToday`
 - 履歴タブ: `renderHistory（30日ずつページング）/ setChip / splitsForDay / moveDay`
 - 分割タブ: `renderSplits / exRowHtml / openSplitModal / openAddExSheet / moveExercise`
