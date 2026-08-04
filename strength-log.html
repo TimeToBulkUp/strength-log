@@ -79,6 +79,7 @@
   .user-pill svg{color:var(--muted);flex:none;}
   .user-ava{width:32px;height:32px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;font-family:"Oswald",sans-serif;font-weight:600;font-size:15px;color:#1a1204;background:var(--accent);}
   .user-ava.sm{width:26px;height:26px;font-size:13px;}
+  .icon-btn{display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;background:var(--surface-2);border:1px solid var(--line);color:var(--muted);cursor:pointer;flex:none;}
 
   .log-date{font-family:"Oswald",sans-serif;font-size:13px;letter-spacing:.05em;color:var(--muted);margin-bottom:10px;}
   .nosave{display:none;background:rgba(226,86,77,.1);border:1px solid var(--danger);color:#f0a49f;border-radius:9px;padding:10px 12px;font-size:11.5px;line-height:1.55;margin-bottom:14px;align-items:flex-start;gap:8px;}
@@ -482,11 +483,16 @@
         <div class="sub">Strength Log</div>
       </div>
     </div>
-    <button class="user-pill" id="userPillBtn" aria-label="ユーザー切り替え">
-      <span class="user-ava sm" id="pillAva">?</span>
-      <span class="user-pill-name" id="pillName">—</span>
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
-    </button>
+    <div style="display:flex;align-items:center;gap:8px">
+      <button class="icon-btn" id="feedbackBtn" aria-label="お問い合わせ">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+      </button>
+      <button class="user-pill" id="userPillBtn" aria-label="ユーザー切り替え">
+        <span class="user-ava sm" id="pillAva">?</span>
+        <span class="user-pill-name" id="pillName">—</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+    </div>
   </header>
 
   <main>
@@ -651,6 +657,17 @@
     <button class="user-recover" id="userDiagBtn">診断情報を表示</button>
     <pre id="diagOut" class="diag-out"></pre>
     <div class="user-hint">ユーザーごとに種目・分割・記録が別々に保存されます。</div>
+  </div>
+</div>
+
+<!-- Feedback / inquiry form -->
+<div class="modal-bg" id="feedbackModal">
+  <div class="modal">
+    <h3>お問い合わせ</h3>
+    <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSd6zew8rjZL1GpTfbKOunziG5FGo9QHweOO7WoaksiqK2BRNw/viewform?embedded=true" style="width:100%;height:70vh;border:0;border-radius:10px;background:#fff">読み込んでいます…</iframe>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="feedbackClose">閉じる</button>
+    </div>
   </div>
 </div>
 
@@ -1208,6 +1225,9 @@
 
   function openUserSheet(){ editingUserId=null; resetUserAddBar(); renderUserList(); document.getElementById("userSheet").classList.add("open"); }
   function closeUserSheet(){ document.getElementById("userSheet").classList.remove("open"); editingUserId=null; resetUserAddBar(); }
+
+  function openFeedback(){ document.getElementById("feedbackModal").classList.add("open"); }
+  function closeFeedback(){ document.getElementById("feedbackModal").classList.remove("open"); }
 
   function resetUserAddBar(){
     const inp=document.getElementById("userNameInput");
@@ -1845,6 +1865,9 @@
 
     document.getElementById("userPillBtn").addEventListener("click",openUserSheet);
     document.getElementById("userSheet").addEventListener("click",e=>{ if(e.target.id==="userSheet") closeUserSheet(); });
+    document.getElementById("feedbackBtn").addEventListener("click",openFeedback);
+    document.getElementById("feedbackClose").addEventListener("click",closeFeedback);
+    document.getElementById("feedbackModal").addEventListener("click",e=>{ if(e.target.id==="feedbackModal") closeFeedback(); });
     document.getElementById("userAddBtn").addEventListener("click",commitUser);
     document.getElementById("userEditCancel").addEventListener("click",()=>{ editingUserId=null; resetUserAddBar(); });
     document.getElementById("userNameInput").addEventListener("keydown",e=>{ if(e.key==="Enter") commitUser(); });
