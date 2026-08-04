@@ -648,7 +648,8 @@
     </div>
     <button class="user-edit-cancel" id="userEditCancel" style="display:none">編集をやめる</button>
     <button class="user-recover" id="userRecoverBtn">保存済みデータを探して復元</button>
-    <button class="user-recover" id="userForceBtn" style="border-color:var(--accent-dim);color:var(--accent)">Excelデータを強制的に取り込み直す</button>
+    <button class="user-recover" id="userExcelBtn" style="border-color:var(--accent-dim);color:var(--accent)">Excelファイルを取り込む</button>
+    <input type="file" id="userExcelInput" accept=".xlsx" style="display:none">
     <button class="user-recover" id="userDiagBtn">診断情報を表示</button>
     <pre id="diagOut" class="diag-out"></pre>
     <div class="user-hint">ユーザーごとに種目・分割・記録が別々に保存されます。</div>
@@ -657,6 +658,7 @@
 
 <div id="toast"></div>
 <script id="sugano-bundle" src="sugano-bundle.local.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 
 <script>
@@ -876,6 +878,44 @@
     data = normalize(d);
   }
 
+  // Merge `incoming` (exercises/splits/sets) into `cur` in place.
+  // - exercises are matched by name; unmatched incoming exercises are added.
+  // - splits are matched by name; missing exercise refs are added to existing splits.
+  // - sets are deduped on (exercise, day, weight, reps) so re-running never creates duplicates.
+  // Returns the number of newly-added sets.
+  function mergeIncoming(cur, incoming){
+    const byName={}; cur.exercises.forEach(e=>{ byName[e.name]=e.id; });
+    incoming.exercises.forEach(e=>{
+      if(!byName[e.name]){ cur.exercises.push({id:e.id,name:e.name,body:e.body}); byName[e.name]=e.id; }
+    });
+    const inName={}; incoming.exercises.forEach(e=>{ inName[e.id]=e.name; });
+    const remap = inId => byName[inName[inId]] || inId;
+
+    const curSplitByName={}; cur.splits.forEach(s=>{ curSplitByName[s.name]=s; });
+    (incoming.splits||[]).forEach(s=>{
+      const ids=s.exIds.map(remap);
+      const t=curSplitByName[s.name];
+      if(!t){ cur.splits.push({id:s.id,name:s.name,exIds:ids}); }
+      else { ids.forEach(id=>{ if(!t.exIds.includes(id)) t.exIds.push(id); }); }
+    });
+
+    // sets: dedupe on (exercise, day, weight, reps, order-within-day)
+    const sig = s => [s.exId, dateKey(s.ts), s.weight, s.reps].join("|");
+    const seen = {};
+    cur.sets.forEach(s=>{ const k=sig(s); seen[k]=(seen[k]||0)+1; });
+    let addedN=0;
+    incoming.sets.slice().sort((a,b)=>a.ts-b.ts).forEach(s=>{
+      const exId=remap(s.exId);
+      const k=[exId,dateKey(s.ts),s.weight,s.reps].join("|");
+      const have=seen[k]||0;
+      if(have>0){ seen[k]=have-1; return; }   // already present
+      cur.sets.push({id:uid(),exId,weight:s.weight,reps:s.reps,ts:s.ts});
+      addedN++;
+    });
+    cur.sets.sort((a,b)=>a.ts-b.ts);
+    return addedN;
+  }
+
   // Import a bundled dataset (e.g. from a spreadsheet). Runs once per importId.
   // If the profile already exists, merge in only the new sets (never wipes in-app records).
   async function maybeImport(){
@@ -909,39 +949,7 @@
       if(!cur){
         await sSet(uKey(existing.id), JSON.stringify(incoming));
       } else {
-        // map incoming exercise ids -> existing ids (match by name)
-        const byName={}; cur.exercises.forEach(e=>{ byName[e.name]=e.id; });
-        incoming.exercises.forEach(e=>{
-          if(!byName[e.name]){ cur.exercises.push({id:e.id,name:e.name,body:e.body}); byName[e.name]=e.id; }
-        });
-        const inName={}; incoming.exercises.forEach(e=>{ inName[e.id]=e.name; });
-        const remap = inId => byName[inName[inId]] || inId;
-
-        // splits: add missing ones; for existing splits, add any missing exercise refs
-        const curSplitByName={}; cur.splits.forEach(s=>{ curSplitByName[s.name]=s; });
-        incoming.splits.forEach(s=>{
-          const ids=s.exIds.map(remap);
-          const t=curSplitByName[s.name];
-          if(!t){ cur.splits.push({id:s.id,name:s.name,exIds:ids}); }
-          else { ids.forEach(id=>{ if(!t.exIds.includes(id)) t.exIds.push(id); }); }
-        });
-
-        // sets: dedupe on (exercise, day, weight, reps, order-within-day)
-        const sig = s => [s.exId, dateKey(s.ts), s.weight, s.reps].join("|");
-        const seen = {};
-        cur.sets.forEach(s=>{ const k=sig(s); seen[k]=(seen[k]||0)+1; });
-        const need = {};
-        incoming.sets.forEach(s=>{ const k=[remap(s.exId),dateKey(s.ts),s.weight,s.reps].join("|"); need[k]=(need[k]||0)+1; });
-        let addedN=0;
-        incoming.sets.sort((a,b)=>a.ts-b.ts).forEach(s=>{
-          const exId=remap(s.exId);
-          const k=[exId,dateKey(s.ts),s.weight,s.reps].join("|");
-          const have=seen[k]||0;
-          if(have>0){ seen[k]=have-1; return; }   // already present
-          cur.sets.push({id:uid(),exId,weight:s.weight,reps:s.reps,ts:s.ts});
-          addedN++;
-        });
-        cur.sets.sort((a,b)=>a.ts-b.ts);
+        const addedN = mergeIncoming(cur, incoming);
         await sSet(uKey(existing.id), JSON.stringify(cur));
         if(addedN) console.log("[import] added",addedN,"new sets to",name);
       }
@@ -1306,23 +1314,87 @@
     el.textContent=L.join("\n");
   }
 
-  // Force re-import from the embedded bundle, replacing that profile only.
-  async function forceImport(){
-    const b=window.SUGANO_BUNDLE;
-    if(!b || !b.data){ toast("埋め込みデータが見つかりません"); return; }
-    if(!confirm(`Excelの${b.data.sets.length}セットを「${b.userName}」として取り込み直します。\n同名ユーザーの記録は置き換わります。よろしいですか？`)) return;
-    const incoming=normalize(JSON.parse(JSON.stringify(b.data)));
-    incoming.__name=b.userName;
-    let u=meta.users.find(x=>x.name===b.userName);
-    if(!u){ u={id:uid(),name:b.userName}; meta.users.push(u); }
-    await sSet(uKey(u.id), JSON.stringify(incoming));
-    meta.currentUserId=u.id;
-    await saveMeta();
-    await sSet("strengthlog:import:"+b.importId,"1");
-    await loadUserData();
-    activeSplit="__all";
-    renderUserPill(); renderUserList(); renderAll();
-    toast(b.data.sets.length+"セットを取り込みました");
+  // Round to 1 decimal using round-half-to-even (matches Python's round(),
+  // which is what the original spreadsheet-derived data was rounded with).
+  function bankersRound1(x){
+    const scaled = x*10;
+    const floor = Math.floor(scaled);
+    const diff = scaled - floor;
+    let rounded;
+    if(Math.abs(diff-0.5) < 1e-9){ rounded = (floor % 2 === 0) ? floor : floor+1; }
+    else { rounded = Math.round(scaled); }
+    return rounded/10;
+  }
+
+  // Parse a workout-log spreadsheet (each sheet: 日付(M/D), 種目, then weight/reps
+  // column pairs) into {exercises, sets}, matching the format used for the
+  // originally-embedded SUGANO_BUNDLE data. Unknown exercise names are added
+  // fresh (body:"その他"); known ones are matched to `data.exercises` by name.
+  function parseWorkoutWorkbook(wb, existingExercises){
+    const nameToEx = {}; existingExercises.forEach(e=>{ nameToEx[e.name]={id:e.id,name:e.name,body:e.body}; });
+    const allSets = [];
+    wb.SheetNames.forEach(sheetName=>{
+      const ws = wb.Sheets[sheetName];
+      const rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:null, raw:true});
+      if(!rows.length) return;
+      const header = rows[0];
+      const dateCol = header.indexOf("日付(M/D)");
+      const exCol = header.indexOf("種目");
+      if(dateCol===-1 || exCol===-1) return;
+      const pairs=[];
+      for(let i=exCol+1;i<header.length;i++){
+        if(typeof header[i]==="string" && header[i].startsWith("weight") &&
+           typeof header[i+1]==="string" && header[i+1].startsWith("reps")){
+          pairs.push([i,i+1]); i++;
+        }
+      }
+      let lastDate=null;
+      const bySheetSets=[]; // {exName, weight, reps} in row order
+      for(let r=1;r<rows.length;r++){
+        const row=rows[r];
+        const d=row[dateCol];
+        if(d instanceof Date) lastDate=d;
+        let ex=row[exCol];
+        if(!ex || !lastDate) continue;
+        if(typeof ex==="string") ex=ex.trim();
+        pairs.forEach(([wc,rc])=>{
+          const w=row[wc], rep=row[rc];
+          if(typeof w!=="number" || typeof rep!=="number") return;
+          if(w<=0 || rep<=0) return;
+          bySheetSets.push({date:lastDate, exName:ex, weight:bankersRound1(w), reps:Math.round(rep)});
+        });
+      }
+      // assign synthetic timestamps: per date, start 21:00, +1min per set, in row order
+      const byDate={};
+      bySheetSets.forEach(s=>{ const k=s.date.toDateString(); (byDate[k] ||= []).push(s); });
+      Object.keys(byDate).forEach(k=>{
+        const entries=byDate[k];
+        const base=new Date(entries[0].date.getFullYear(), entries[0].date.getMonth(), entries[0].date.getDate(), 21,0,0);
+        entries.forEach((s,idx)=>{
+          if(!nameToEx[s.exName]) nameToEx[s.exName]={id:uid(), name:s.exName, body:"その他"};
+          allSets.push({exId:nameToEx[s.exName].id, weight:s.weight, reps:s.reps, ts: base.getTime()+idx*60000});
+        });
+      });
+    });
+    return { exercises: Object.values(nameToEx), sets: allSets };
+  }
+
+  // Import a workout-log spreadsheet chosen by the user, merging new sets into
+  // the currently active profile. Never overwrites existing records.
+  async function importExcelFile(file){
+    let wb;
+    try{
+      const buf = await file.arrayBuffer();
+      wb = XLSX.read(buf, {type:"array", cellDates:true});
+    }catch(e){ toast("Excelの読み込みに失敗しました"); return; }
+
+    const incoming = parseWorkoutWorkbook(wb, data.exercises);
+    if(!incoming.sets.length){ toast("取り込める記録が見つかりませんでした"); return; }
+
+    const addedN = mergeIncoming(data, {exercises:incoming.exercises, splits:[], sets:incoming.sets});
+    await save();
+    renderAll();
+    toast(addedN ? addedN+"セットを新しく取り込みました" : "新しいセットはありませんでした（すべて取り込み済みです）");
   }
 
   async function delUser(id){
@@ -1864,7 +1936,11 @@
     document.getElementById("userEditCancel").addEventListener("click",()=>{ editingUserId=null; resetUserAddBar(); });
     document.getElementById("userNameInput").addEventListener("keydown",e=>{ if(e.key==="Enter") commitUser(); });
     document.getElementById("userRecoverBtn").addEventListener("click",runRecovery);
-    document.getElementById("userForceBtn").addEventListener("click",forceImport);
+    document.getElementById("userExcelBtn").addEventListener("click",()=>document.getElementById("userExcelInput").click());
+    document.getElementById("userExcelInput").addEventListener("change",async(e)=>{
+      const file=e.target.files[0]; e.target.value="";
+      if(file) await importExcelFile(file);
+    });
     document.getElementById("userDiagBtn").addEventListener("click",runDiagnostics);
     document.getElementById("noSaveX").addEventListener("click",()=>document.getElementById("noSave").classList.remove("show"));
 
