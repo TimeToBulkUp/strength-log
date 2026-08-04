@@ -648,8 +648,6 @@
     </div>
     <button class="user-edit-cancel" id="userEditCancel" style="display:none">編集をやめる</button>
     <button class="user-recover" id="userRecoverBtn">保存済みデータを探して復元</button>
-    <button class="user-recover" id="userExcelBtn" style="border-color:var(--accent-dim);color:var(--accent)">Excelファイルを取り込む</button>
-    <input type="file" id="userExcelInput" accept=".xlsx" style="display:none">
     <button class="user-recover" id="userDiagBtn">診断情報を表示</button>
     <pre id="diagOut" class="diag-out"></pre>
     <div class="user-hint">ユーザーごとに種目・分割・記録が別々に保存されます。</div>
@@ -658,8 +656,6 @@
 
 <div id="toast"></div>
 <script id="sugano-bundle" src="sugano-bundle.local.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-
 
 <script>
 (function(){
@@ -1314,89 +1310,6 @@
     el.textContent=L.join("\n");
   }
 
-  // Round to 1 decimal using round-half-to-even (matches Python's round(),
-  // which is what the original spreadsheet-derived data was rounded with).
-  function bankersRound1(x){
-    const scaled = x*10;
-    const floor = Math.floor(scaled);
-    const diff = scaled - floor;
-    let rounded;
-    if(Math.abs(diff-0.5) < 1e-9){ rounded = (floor % 2 === 0) ? floor : floor+1; }
-    else { rounded = Math.round(scaled); }
-    return rounded/10;
-  }
-
-  // Parse a workout-log spreadsheet (each sheet: 日付(M/D), 種目, then weight/reps
-  // column pairs) into {exercises, sets}, matching the format used for the
-  // originally-embedded SUGANO_BUNDLE data. Unknown exercise names are added
-  // fresh (body:"その他"); known ones are matched to `data.exercises` by name.
-  function parseWorkoutWorkbook(wb, existingExercises){
-    const nameToEx = {}; existingExercises.forEach(e=>{ nameToEx[e.name]={id:e.id,name:e.name,body:e.body}; });
-    const allSets = [];
-    wb.SheetNames.forEach(sheetName=>{
-      const ws = wb.Sheets[sheetName];
-      const rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:null, raw:true});
-      if(!rows.length) return;
-      const header = rows[0];
-      const dateCol = header.indexOf("日付(M/D)");
-      const exCol = header.indexOf("種目");
-      if(dateCol===-1 || exCol===-1) return;
-      const pairs=[];
-      for(let i=exCol+1;i<header.length;i++){
-        if(typeof header[i]==="string" && header[i].startsWith("weight") &&
-           typeof header[i+1]==="string" && header[i+1].startsWith("reps")){
-          pairs.push([i,i+1]); i++;
-        }
-      }
-      let lastDate=null;
-      const bySheetSets=[]; // {exName, weight, reps} in row order
-      for(let r=1;r<rows.length;r++){
-        const row=rows[r];
-        const d=row[dateCol];
-        if(d instanceof Date) lastDate=d;
-        let ex=row[exCol];
-        if(!ex || !lastDate) continue;
-        if(typeof ex==="string") ex=ex.trim();
-        pairs.forEach(([wc,rc])=>{
-          const w=row[wc], rep=row[rc];
-          if(typeof w!=="number" || typeof rep!=="number") return;
-          if(w<=0 || rep<=0) return;
-          bySheetSets.push({date:lastDate, exName:ex, weight:bankersRound1(w), reps:Math.round(rep)});
-        });
-      }
-      // assign synthetic timestamps: per date, start 21:00, +1min per set, in row order
-      const byDate={};
-      bySheetSets.forEach(s=>{ const k=s.date.toDateString(); (byDate[k] ||= []).push(s); });
-      Object.keys(byDate).forEach(k=>{
-        const entries=byDate[k];
-        const base=new Date(entries[0].date.getFullYear(), entries[0].date.getMonth(), entries[0].date.getDate(), 21,0,0);
-        entries.forEach((s,idx)=>{
-          if(!nameToEx[s.exName]) nameToEx[s.exName]={id:uid(), name:s.exName, body:"その他"};
-          allSets.push({exId:nameToEx[s.exName].id, weight:s.weight, reps:s.reps, ts: base.getTime()+idx*60000});
-        });
-      });
-    });
-    return { exercises: Object.values(nameToEx), sets: allSets };
-  }
-
-  // Import a workout-log spreadsheet chosen by the user, merging new sets into
-  // the currently active profile. Never overwrites existing records.
-  async function importExcelFile(file){
-    let wb;
-    try{
-      const buf = await file.arrayBuffer();
-      wb = XLSX.read(buf, {type:"array", cellDates:true});
-    }catch(e){ toast("Excelの読み込みに失敗しました"); return; }
-
-    const incoming = parseWorkoutWorkbook(wb, data.exercises);
-    if(!incoming.sets.length){ toast("取り込める記録が見つかりませんでした"); return; }
-
-    const addedN = mergeIncoming(data, {exercises:incoming.exercises, splits:[], sets:incoming.sets});
-    await save();
-    renderAll();
-    toast(addedN ? addedN+"セットを新しく取り込みました" : "新しいセットはありませんでした（すべて取り込み済みです）");
-  }
-
   async function delUser(id){
     if(meta.users.length<=1){ toast("最後のユーザーは削除できません"); return; }
     const u=meta.users.find(x=>x.id===id);
@@ -1936,11 +1849,6 @@
     document.getElementById("userEditCancel").addEventListener("click",()=>{ editingUserId=null; resetUserAddBar(); });
     document.getElementById("userNameInput").addEventListener("keydown",e=>{ if(e.key==="Enter") commitUser(); });
     document.getElementById("userRecoverBtn").addEventListener("click",runRecovery);
-    document.getElementById("userExcelBtn").addEventListener("click",()=>document.getElementById("userExcelInput").click());
-    document.getElementById("userExcelInput").addEventListener("change",async(e)=>{
-      const file=e.target.files[0]; e.target.value="";
-      if(file) await importExcelFile(file);
-    });
     document.getElementById("userDiagBtn").addEventListener("click",runDiagnostics);
     document.getElementById("noSaveX").addEventListener("click",()=>document.getElementById("noSave").classList.remove("show"));
 

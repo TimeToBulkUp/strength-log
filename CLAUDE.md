@@ -4,7 +4,7 @@
 
 ## これは何か
 
-スマホで使う、筋トレ記録用の単一HTMLアプリ。`index.html` 一枚で完結しており、ビルド工程・依存パッケージ・フレームワークは一切ありません。バニラのHTML/CSS/JS。外部読み込みはGoogle Fonts (Oswald / Noto Sans JP) と、Excel取り込み機能用のSheetJS (xlsx.js, CDN) のみ。
+スマホで使う、筋トレ記録用の単一HTMLアプリ。`index.html` 一枚で完結しており、ビルド工程・依存パッケージ・フレームワークは一切ありません。バニラのHTML/CSS/JS。フォントだけGoogle Fonts (Oswald / Noto Sans JP) を読み込みます。
 
 - `index.html` — 本体（これを編集する）
 - `strength-log.html` — `index.html` と中身は完全に同一のコピー。**両方を常に一致させること**（片方だけ直すと不整合になる）。
@@ -56,16 +56,13 @@ printf '</script>\n' >> index.personal.html
 tail -n +<その行+1> index.html >> index.personal.html
 ```
 
-### Excel取り込み機能
-ユーザー切り替え画面の「Excelファイルを取り込む」ボタンから、ユーザーが選んだ.xlsxファイルをブラウザ内でSheetJSでパースし、現在アクティブなプロフィールに安全にマージする（`parseWorkoutWorkbook` → `mergeIncoming`）。想定するExcel形式は各シートが `日付(M/D), 種目, TV(任意), weight, reps, weight2, reps2, ...` の列を持つもの（日付は縦方向に結合セルでも可＝空欄は直前の日付を引き継ぐ）。
-- `mergeIncoming` は埋め込みバンドルの取り込み(`maybeImport`)とファイル取り込み(`importExcelFile`)の両方で共有している同一のマージ処理。(種目, 日付, 重量, 回数)の組で重複排除するので、同じファイルを何度読み込んでも記録が増殖しない。
-- 重量は0.1kg単位でPythonの`round()`と同じ銀行丸め(`bankersRound1`)にしている。既存データの丸め方式と合わせるため、単純な四捨五入にしないこと。
+### Excelデータの更新方法
+アプリ内にExcel取り込みUIは無い（一時期SheetJSで実装したが、UIが煩雑なため削除済み）。菅野涼太の`sugano-bundle.local.js`を最新のExcelに合わせて更新したい場合は、Claude Codeにその都度Excelファイルの場所を伝えて変換してもらう運用（Python + openpyxlで差分抽出 → `mergeIncoming`と同じ重複排除ロジックで安全にマージ）。
 
 ## コードの地図（すべて index.html 内の1つのIIFE）
 
 - 保存層: `probeBackend / sGet / sSet / sDel / sList / save / saveMeta`
-- 読み込み: `loadMeta / loadUserData / reconcileUsers / recoverUsers / maybeImport / ensureData`
-- Excel取り込み: `parseWorkoutWorkbook / importExcelFile / mergeIncoming / bankersRound1`
+- 読み込み: `loadMeta / loadUserData / reconcileUsers / recoverUsers / maybeImport / mergeIncoming / ensureData`
 - 記録タブ: `renderSplitChips / renderSelects / renderInsight（前回比較テーブル+目安）/ renderToday`
 - 履歴タブ: `renderHistory（30日ずつページング）/ setChip / splitsForDay / moveDay`
 - 分割タブ: `renderSplits / exRowHtml / openSplitModal / openAddExSheet / moveExercise`
