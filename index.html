@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>筋トレログ — STRENGTH LOG</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#14161a">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="筋トレログ">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
@@ -61,13 +68,8 @@
   .brand{display:flex;align-items:center;gap:11px;}
   .brand-mark{
     width:30px;height:30px;border-radius:6px;
-    background:var(--accent);position:relative;flex:none;
+    display:block;object-fit:cover;flex:none;
     box-shadow:0 0 0 1px rgba(0,0,0,.3) inset;
-  }
-  .brand-mark::before{
-    content:"";position:absolute;inset:0;margin:auto;
-    width:15px;height:6px;border-radius:2px;background:var(--bg);
-    box-shadow:-10px 0 0 -1px var(--bg),10px 0 0 -1px var(--bg);
   }
   .brand h1{font-size:16px;font-weight:700;letter-spacing:.02em;line-height:1.1;}
   .brand .sub{
@@ -476,7 +478,7 @@
 <div class="app">
   <header>
     <div class="brand">
-      <div class="brand-mark"></div>
+      <img class="brand-mark" src="icon-192.png" alt="">
       <div>
         <h1>筋トレログ</h1>
         <div class="sub">Strength Log</div>
