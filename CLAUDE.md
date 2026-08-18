@@ -9,6 +9,7 @@
 - `index.html` — 本体（これを編集する）
 - `strength-log.html` — `index.html` と中身は完全に同一のコピー。**両方を常に一致させること**（片方だけ直すと不整合になる）。
 - `index.personal.html` — 個人データ埋め込み済みのローカル専用コピー（後述、`.gitignore`済み）。
+- `manifest.json` / `icon-192.png` / `icon-512.png` / `icon-512-maskable.png` / `apple-touch-icon.png` — PWA化（iOSの「ホーム画面に追加」）用。アイコンは「グリッチバーベル」（バーベルを緑・赤にずらして三重に重ねたマーク、Pillowで生成）。ヘッダー左上の`.brand-mark`もこの`icon-192.png`を表示している。アイコンを差し替える場合はこの5ファイルとヘッダーの表示を両方確認すること。
 
 ## 実行・確認方法
 
