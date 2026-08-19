@@ -1012,22 +1012,41 @@
   }
   function todayExVol(exId){ let v=0; todaySetsOf(exId).forEach(s=>v+=s.weight*s.reps); return v; }
   function prevSession(exId){
+    const list=pastSessionsList(exId);
+    return list.length ? list[0] : null;
+  }
+  // all past sessions (excluding today), newest first
+  function pastSessionsList(exId){
     const m=exSessions(exId); const tk=todayKey();
     const keys=Object.keys(m).filter(k=>k<tk).sort((a,b)=>b.localeCompare(a));
-    if(!keys.length) return null;
-    const sets=m[keys[0]].sort((a,b)=>a.ts-b.ts);
-    let vol=0; sets.forEach(s=>vol+=s.weight*s.reps);
-    return {dateKey:keys[0], sets, vol};
-  }
-  // last N sessions (excluding today), newest first
-  function recentSessions(exId, n){
-    const m=exSessions(exId); const tk=todayKey();
-    const keys=Object.keys(m).filter(k=>k<tk).sort((a,b)=>b.localeCompare(a)).slice(0,n);
     return keys.map(k=>{
       const sets=m[k].slice().sort((a,b)=>a.ts-b.ts);
       let vol=0; sets.forEach(s=>vol+=s.weight*s.reps);
       return {dateKey:k, sets, vol};
     });
+  }
+  // Index into pastSessionsList() that the *next-set target* should be based
+  // on. Normally the most recent one — but a session whose volume dropped
+  // 20%+ from the one before it (bad day / sick / deload) is skipped so a
+  // single off day doesn't reset progression. That session still shows up
+  // as-is everywhere else (history, the compare table, today-vs-previous
+  // stat) — this only changes what "前回" means for computing 目安.
+  function targetBasisIndex(list){
+    for(let i=0;i<list.length;i++){
+      const cur=list[i], prior=list[i+1];
+      if(prior && prior.vol>0 && cur.vol<=prior.vol*0.8) continue; // -20%以上の落ち込み日はスキップ
+      return i;
+    }
+    return list.length ? list.length-1 : -1;
+  }
+  function targetBasisSession(exId){
+    const list=pastSessionsList(exId);
+    const i=targetBasisIndex(list);
+    return i>=0 ? list[i] : null;
+  }
+  // last N sessions (excluding today), newest first
+  function recentSessions(exId, n){
+    return pastSessionsList(exId).slice(0, n);
   }
   function e1RM(w,r){ return w*(1+r/30); }
   function gcdInt(a,b){ while(b){ const t=a%b; a=b; b=t; } return a; }
@@ -1054,7 +1073,10 @@
   function planFor(exId){
     const ex=data.exercises.find(e=>e.id===exId);
     const step=(ex && typeof ex.step==="number") ? ex.step : (inferStep(exId) ?? 2.5);
-    const prev=prevSession(exId);
+    const list=pastSessionsList(exId);
+    const basisIdx=targetBasisIndex(list);
+    const prev=basisIdx>=0 ? list[basisIdx] : null;
+    const priorToPrev=(basisIdx>=0 && basisIdx+1<list.length) ? list[basisIdx+1] : null;
     const done=todaySetsOf(exId);
     if(!prev || !prev.sets.length){
       if(!done.length) return {kind:"first"};
@@ -1062,7 +1084,30 @@
       const t=targetFor(top, step);
       return {kind:"noprev", next:t, doneCount:done.length, est:Math.round(e1RM(top.weight,top.reps))};
     }
-    const targets=prev.sets.map(s=>targetFor(s, step));
+
+    let targets;
+    const CATCHUP_REPS_CAP=30;
+    if(priorToPrev && priorToPrev.sets.length>0 && prev.sets.length===priorToPrev.sets.length+1){
+      // 前回はボリュームが足りず、いつもよりちょうど1セット多く「追加セット」をしていた。
+      // 今回はいつも通りのセット数のまま、最終セットの回数だけ増やして前回の総ボリュームを超えられるようにする。
+      const usualCount=priorToPrev.sets.length;
+      const base=priorToPrev.sets.slice(0,usualCount-1).map(s=>targetFor(s, step));
+      const lastSrc=priorToPrev.sets[usualCount-1];
+      const soFarVol=base.reduce((a,t)=>a+t.weight*t.reps,0);
+      const naturalLast=targetFor(lastSrc, step);
+      // 必ず前回のボリュームを「超える」回数（ちょうど届く回数ではなく+1する）
+      const neededReps=lastSrc.weight>0 ? Math.floor((prev.vol-soFarVol)/lastSrc.weight)+1 : naturalLast.reps;
+      const reps=Math.max(naturalLast.reps, neededReps, 1);
+      if(reps<=CATCHUP_REPS_CAP){
+        targets=base; targets.push({weight:lastSrc.weight, reps, why:"catchup"});
+      } else {
+        // 回数が現実的でない（=単なるセット数増ではなく別物の可能性）ときは通常通りに戻す
+        targets=prev.sets.map(s=>targetFor(s, step));
+      }
+    } else {
+      targets=prev.sets.map(s=>targetFor(s, step));
+    }
+
     const total=targets.length;
     const doneCount=done.length;
     const remaining=targets.slice(doneCount);
@@ -1178,7 +1223,7 @@
         })()
       : "";
 
-    const WHY={up:"前回より重く", reps:"回数を1つ伸ばす", same:"同じ重量で確実に"};
+    const WHY={up:"前回より重く", reps:"回数を1つ伸ばす", same:"同じ重量で確実に", catchup:"前回の追加セット分を回数で挽回"};
     let guideHtml;
     if(s.kind==="ok"){
       const t=s.next;
