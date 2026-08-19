@@ -68,7 +68,7 @@ tail -n +<その行+1> index.html >> index.personal.html
 - 履歴タブ: `renderHistory（30日ずつページング）/ setChip / splitsForDay / moveDay`
 - 分割タブ: `renderSplits / exRowHtml / openSplitModal / openAddExSheet / moveExercise`
 - ユーザー: `renderUserPill / renderUserList / switchUser / commitUser / runRecovery`
-- 目安ロジック: `planFor / targetFor / recentSessions`（前回の同じ順のセットを基準に、10回以上で+2.5kg、5〜9回で+1回）
+- 目安ロジック: `planFor / targetFor / recentSessions`（前回の同じ順のセットを基準に、10回以上で+増量幅、5〜9回で+1回）。増量幅は種目ごとの`exercise.step`（kg、種目編集モーダルで設定、未設定時は2.5kgにフォールバック）。
 
 ## 変更時のルール
 

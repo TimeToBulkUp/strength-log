@@ -598,6 +598,10 @@
       <label>部位</label>
       <div class="chip-row" id="bodyChips"></div>
     </div>
+    <div class="field">
+      <label for="exStep">目安の増量幅 <span class="unit-tag">kg・空欄で自動</span></label>
+      <input type="number" id="exStep" inputmode="decimal" step="0.5" min="0" placeholder="自動">
+    </div>
     <div class="modal-actions">
       <button class="btn-ghost" id="exCancel">キャンセル</button>
       <button class="btn-solid" id="exSave">保存</button>
@@ -1026,23 +1030,39 @@
     });
   }
   function e1RM(w,r){ return w*(1+r/30); }
+  function gcdInt(a,b){ while(b){ const t=a%b; a=b; b=t; } return a; }
+  // マシン/フリーウエイトの実際の刻み幅を、これまでの記録（重量の並び）から逆算する。
+  // 使われた重量どうしの最大公約数 ≒ そのマシン/プレートの最小刻み。
+  // データが少ない・ばらつきすぎて信頼できない場合は null（呼び出し側で既定値にフォールバック）。
+  function inferStep(exId){
+    const ws=[...new Set(data.sets.filter(s=>s.exId===exId).map(s=>Math.round(s.weight*10)))].sort((a,b)=>a-b);
+    if(ws.length<2) return null;
+    let g=0;
+    for(let i=1;i<ws.length;i++) g=gcdInt(g, ws[i]-ws[i-1]);
+    if(!g) return null;
+    const step=g/10;
+    return (step>=0.5 && step<=10) ? step : null;
+  }
   // target for one set, based on the matching set from last time
-  function targetFor(p){
-    if(p.reps>=10) return {weight:Math.round((p.weight+2.5)*10)/10, reps:p.reps, why:"up"};
+  function targetFor(p, step){
+    if(step==null) step=2.5;
+    if(p.reps>=10) return {weight:Math.round((p.weight+step)*10)/10, reps:p.reps, why:"up"};
     if(p.reps>=5)  return {weight:p.weight, reps:p.reps+1, why:"reps"};
     return {weight:p.weight, reps:Math.max(p.reps,1), why:"same"};
   }
   // full plan for today: one target per set of the previous session
   function planFor(exId){
+    const ex=data.exercises.find(e=>e.id===exId);
+    const step=(ex && typeof ex.step==="number") ? ex.step : (inferStep(exId) ?? 2.5);
     const prev=prevSession(exId);
     const done=todaySetsOf(exId);
     if(!prev || !prev.sets.length){
       if(!done.length) return {kind:"first"};
       const top=done.reduce((a,b)=>(b.weight>a.weight||(b.weight===a.weight&&b.reps>a.reps))?b:a);
-      const t=targetFor(top);
+      const t=targetFor(top, step);
       return {kind:"noprev", next:t, doneCount:done.length, est:Math.round(e1RM(top.weight,top.reps))};
     }
-    const targets=prev.sets.map(targetFor);
+    const targets=prev.sets.map(s=>targetFor(s, step));
     const total=targets.length;
     const doneCount=done.length;
     const remaining=targets.slice(doneCount);
@@ -1763,6 +1783,10 @@
     const ex=id?data.exercises.find(e=>e.id===id):null;
     document.getElementById("exModalTitle").textContent=id?"種目を編集":"種目を追加";
     document.getElementById("exName").value=ex?ex.name:"";
+    const stepEl=document.getElementById("exStep");
+    stepEl.value=(ex && typeof ex.step==="number")?ex.step:"";
+    const auto=ex?inferStep(ex.id):null;
+    stepEl.placeholder=auto!=null?`自動: ${auto}kg`:"自動: 2.5kg";
     selectedBody=ex?ex.body:"胸";
     renderBodyChips();
     document.getElementById("exDelete").style.display = id ? "block" : "none";
@@ -1781,12 +1805,17 @@
   async function saveEx(){
     const name=document.getElementById("exName").value.trim();
     if(!name) return;
+    const stepStr=document.getElementById("exStep").value.trim();
+    let step=null;
+    if(stepStr!==""){ const v=parseFloat(stepStr); if(!isNaN(v) && v>=0) step=v; }
     if(editingExId){
       const e=data.exercises.find(x=>x.id===editingExId);
-      if(e){ e.name=name; e.body=selectedBody; }
+      if(e){ e.name=name; e.body=selectedBody; if(step==null) delete e.step; else e.step=step; }
       toast("種目を更新しました");
     }else{
-      data.exercises.push({id:uid(),name,body:selectedBody});
+      const newEx={id:uid(),name,body:selectedBody};
+      if(step!=null) newEx.step=step;
+      data.exercises.push(newEx);
       toast("種目を追加しました");
     }
     await save(); renderAll(); closeExModal();
