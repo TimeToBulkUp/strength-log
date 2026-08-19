@@ -348,7 +348,7 @@
   .prev-scroll::-webkit-scrollbar{height:6px;}
   .prev-scroll::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px;}
   .prev-table{border-collapse:separate;border-spacing:0;white-space:nowrap;font-variant-numeric:tabular-nums;}
-  .prev-table th,.prev-table td{padding:6px 10px;text-align:center;}
+  .prev-table th,.prev-table td{padding:6px 7px;text-align:center;}
   .prev-table tbody .row-today td{padding-top:8px;padding-bottom:8px;}
   .prev-table thead th{font-size:10px;font-weight:500;letter-spacing:.04em;color:var(--faint);background:var(--surface-2);}
   .prev-table thead th.setno{font-family:"Oswald",sans-serif;font-size:11px;color:var(--muted);font-weight:600;border-left:1px solid var(--line);padding-bottom:2px;}
@@ -385,11 +385,11 @@
   .prev-table tbody .row-today td.w.outside{border-left:1px solid var(--line-soft);}
 
   /* sticky left columns: row label + total volume */
-  .prev-table .rowlab{position:sticky;left:0;z-index:2;text-align:left;font-family:"Noto Sans JP",sans-serif;font-size:11px;font-weight:500;padding-left:12px;padding-right:8px;width:58px;min-width:58px;max-width:58px;box-sizing:border-box;overflow:hidden;}
+  .prev-table .rowlab{position:sticky;left:0;z-index:2;text-align:left;font-family:"Noto Sans JP",sans-serif;font-size:11px;font-weight:500;padding-left:10px;padding-right:4px;width:44px;min-width:44px;max-width:44px;box-sizing:border-box;overflow:hidden;}
   .prev-table thead th.rowlab{background:var(--surface-2);}
   .prev-table tbody td.rowlab{background:var(--well);color:var(--muted);}
   .prev-table tbody .row-today td.rowlab{color:var(--text);font-weight:700;}
-  .prev-table .tv{position:sticky;left:58px;z-index:2;border-right:2px solid var(--line);}
+  .prev-table .tv{position:sticky;left:44px;z-index:2;border-right:2px solid var(--line);padding-left:4px;}
   .prev-table thead th.tv{background:var(--surface-2);color:var(--accent);font-weight:600;}
   .prev-table tbody td.tv{background:var(--well);color:var(--accent);font-weight:600;font-size:15px;}
   .prev-table tbody .row-prev td.tv{color:var(--accent-dim);}
@@ -1098,7 +1098,7 @@
           if(s.targets && s.targets.length>n) n=s.targets.length;
           if(!n) return "";
 
-          let h1 = `<th class="rowlab"></th><th class="tv">総ボリューム</th>`;
+          let h1 = `<th class="rowlab"></th><th class="tv">Total</th>`;
           let h2 = `<th class="rowlab"></th><th class="tv"></th>`;
           for(let i=0;i<n;i++){
             h1 += `<th class="setno" colspan="2">${i+1}</th>`;
