@@ -281,6 +281,29 @@
   .tab.active{color:var(--accent);}
   .tab.active::before{content:"";position:absolute;top:0;width:34px;height:3px;border-radius:0 0 3px 3px;background:var(--accent);}
 
+  /* ---------- First-run onboarding ---------- */
+  .onboard{
+    position:fixed;inset:0;z-index:200;background:var(--bg);
+    display:none;align-items:flex-start;justify-content:center;
+    padding:40px 24px;overflow-y:auto;
+  }
+  .onboard.open{display:flex;}
+  .onboard-inner{max-width:320px;width:100%;text-align:center;}
+  .onboard-mark{width:64px;height:64px;border-radius:14px;margin:0 auto 20px;display:block;box-shadow:0 0 0 1px rgba(0,0,0,.3) inset;}
+  .onboard h1{font-size:19px;font-weight:700;letter-spacing:.02em;margin-bottom:4px;}
+  .onboard .sub{
+    font-family:"Oswald",sans-serif;font-size:10px;letter-spacing:.28em;
+    color:var(--faint);font-weight:500;text-transform:uppercase;margin-bottom:22px;
+  }
+  .onboard p{font-size:13px;line-height:1.7;color:var(--muted);margin-bottom:22px;}
+  .onboard .field{margin-bottom:18px;}
+  .onboard input{
+    width:100%;height:var(--tap);background:var(--well);border:1px solid var(--line);
+    border-radius:10px;color:var(--text);font-family:inherit;font-size:16px;
+    text-align:center;padding:0 14px;box-sizing:border-box;
+  }
+  .onboard input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(246,166,9,.14);}
+
   /* ---------- Modal ---------- */
   .modal-bg{
     position:fixed;inset:0;background:rgba(8,9,11,.72);z-index:50;
@@ -661,10 +684,93 @@
       <button class="btn-solid" id="userAddBtn" style="flex:none;width:88px">追加</button>
     </div>
     <button class="user-edit-cancel" id="userEditCancel" style="display:none">編集をやめる</button>
+    <button class="user-recover" id="userProfileBtn">プロフィールを編集</button>
     <button class="user-recover" id="userRecoverBtn">保存済みデータを探して復元</button>
     <button class="user-recover" id="userDiagBtn">診断情報を表示</button>
     <pre id="diagOut" class="diag-out"></pre>
     <div class="user-hint">ユーザーごとに種目・分割・記録が別々に保存されます。</div>
+  </div>
+</div>
+
+<!-- First-run registration -->
+<div class="onboard" id="onboardView">
+  <div class="onboard-inner">
+    <img class="onboard-mark" src="icon-192.png" alt="">
+    <h1>筋トレログ</h1>
+    <div class="sub">Strength Log</div>
+    <p>はじめまして。いくつか教えてください。<br>記録はこの端末に保存され、他の人とは共有されません。<br>この情報はトレーニングの回数の設定に反映されます。後から変更できます。</p>
+
+    <div class="field" style="text-align:left">
+      <label for="onboardName">お名前</label>
+      <input type="text" id="onboardName" placeholder="お名前" autocomplete="off" maxlength="20">
+    </div>
+
+    <div class="field" style="text-align:left">
+      <label>性別</label>
+      <div class="chip-row" id="onboardGender">
+        <button class="chip" type="button" data-v="male">男性</button>
+        <button class="chip" type="button" data-v="female">女性</button>
+        <button class="chip" type="button" data-v="other">その他</button>
+        <button class="chip sel" type="button" data-v="unspecified">回答しない</button>
+      </div>
+    </div>
+
+    <div class="field" style="text-align:left">
+      <label>トレーニング歴</label>
+      <div class="chip-row" id="onboardExperience">
+        <button class="chip sel" type="button" data-v="beginner">初心者(1年未満)</button>
+        <button class="chip" type="button" data-v="intermediate">中級者(1〜3年)</button>
+        <button class="chip" type="button" data-v="advanced">上級者(3年以上)</button>
+      </div>
+    </div>
+
+    <div class="field" style="text-align:left">
+      <label>目的</label>
+      <div class="chip-row" id="onboardPurpose">
+        <button class="chip sel" type="button" data-v="hypertrophy">筋量アップ</button>
+        <button class="chip" type="button" data-v="cut">減量</button>
+        <button class="chip" type="button" data-v="strength">筋力アップ</button>
+      </div>
+    </div>
+
+    <button class="btn-primary" id="onboardStart" disabled>はじめる</button>
+  </div>
+</div>
+
+<!-- Profile edit -->
+<div class="modal-bg" id="profileModal">
+  <div class="modal">
+    <h3>プロフィール</h3>
+    <div class="field">
+      <label>性別</label>
+      <div class="chip-row" id="profileGender">
+        <button class="chip" type="button" data-v="male">男性</button>
+        <button class="chip" type="button" data-v="female">女性</button>
+        <button class="chip" type="button" data-v="other">その他</button>
+        <button class="chip" type="button" data-v="unspecified">回答しない</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>トレーニング歴</label>
+      <div class="chip-row" id="profileExperience">
+        <button class="chip" type="button" data-v="beginner">初心者(1年未満)</button>
+        <button class="chip" type="button" data-v="intermediate">中級者(1〜3年)</button>
+        <button class="chip" type="button" data-v="advanced">上級者(3年以上)</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>目的</label>
+      <div class="chip-row" id="profilePurpose">
+        <button class="chip" type="button" data-v="hypertrophy">筋量アップ</button>
+        <button class="chip" type="button" data-v="cut">減量</button>
+        <button class="chip" type="button" data-v="strength">筋力アップ</button>
+      </div>
+    </div>
+    <div class="user-hint">「目的」は、次のセットの目安（何回で重量を上げるか）の計算に使われます。</div>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="profileCancel">キャンセル</button>
+      <button class="btn-solid" id="profileSave">保存</button>
+    </div>
   </div>
 </div>
 
@@ -850,6 +956,56 @@
     return total;
   }
 
+  // Shown once, only for a genuinely brand-new visitor (nothing to recover,
+  // no legacy data to migrate). Resolves with the trimmed name once submitted.
+  // single-select chip group: clicking a chip selects it and deselects its siblings
+  function wireSingleSelectChips(containerId){
+    document.getElementById(containerId).querySelectorAll(".chip").forEach(chip=>{
+      chip.addEventListener("click", ()=>{
+        document.getElementById(containerId).querySelectorAll(".chip").forEach(c=>c.classList.remove("sel"));
+        chip.classList.add("sel");
+      });
+    });
+  }
+  function pickChip(containerId){
+    const el=document.getElementById(containerId).querySelector(".chip.sel");
+    return el ? el.dataset.v : null;
+  }
+  function selectChip(containerId, value){
+    document.getElementById(containerId).querySelectorAll(".chip").forEach(c=>{
+      c.classList.toggle("sel", c.dataset.v===value);
+    });
+  }
+
+  function showOnboarding(){
+    return new Promise(resolve=>{
+      const view=document.getElementById("onboardView");
+      const input=document.getElementById("onboardName");
+      const btn=document.getElementById("onboardStart");
+      const pick=pickChip;
+
+      ["onboardGender","onboardExperience","onboardPurpose"].forEach(wireSingleSelectChips);
+
+      view.classList.add("open");
+      setTimeout(()=>input.focus(),150);
+      const validate=()=>{ btn.disabled = !input.value.trim(); };
+      input.addEventListener("input", validate);
+      const submit=()=>{
+        const name=input.value.trim();
+        if(!name) return;
+        view.classList.remove("open");
+        resolve({
+          name,
+          gender: pick("onboardGender"),
+          experience: pick("onboardExperience"),
+          purpose: pick("onboardPurpose")
+        });
+      };
+      btn.addEventListener("click", submit);
+      input.addEventListener("keydown", e=>{ if(e.key==="Enter") submit(); });
+    });
+  }
+
   async function loadMeta(){
     const raw = await sGet(MKEY);
     if(raw){ try{ meta = JSON.parse(raw); }catch(e){ meta = null; } }
@@ -873,10 +1029,16 @@
         // genuinely a first run: migrate any legacy single-user data
         const oldRaw = await sGet(OLD_KEY);
         const id1 = uid();
-        meta = { users:[{id:id1,name:"自分"}], currentUserId:id1 };
+        // a real legacy install being upgraded already has a person behind it —
+        // only a brand-new visitor with nothing at all gets asked their name
+        const profile = oldRaw ? {name:"自分"} : await showOnboarding();
+        meta = { users:[{id:id1,name:profile.name}], currentUserId:id1 };
         let first = null;
         if(oldRaw){ try{ first = JSON.parse(oldRaw); }catch(e){ first = null; } }
-        const d = normalize(first); d.__name = "自分";
+        const d = normalize(first); d.__name = profile.name;
+        if(!oldRaw){
+          d.profile = {gender:profile.gender, experience:profile.experience, purpose:profile.purpose};
+        }
         await sSet(uKey(id1), JSON.stringify(d));
         await saveMeta();
       }
@@ -1065,11 +1227,22 @@
     const step=g/10;
     return (step>=0.5 && step<=10) ? step : null;
   }
+  // 重量アップ/回数+1に切り替わる回数のしきい値。目的（オンボーディングで選択）ごとに変える。
+  const PURPOSE_THRESHOLDS={
+    strength:   {up:5,  reps:3},
+    hypertrophy:{up:10, reps:7},
+    cut:        {up:15, reps:10}
+  };
+  function repsThresholds(){
+    const purpose = data && data.profile && data.profile.purpose;
+    return PURPOSE_THRESHOLDS[purpose] || PURPOSE_THRESHOLDS.hypertrophy;
+  }
   // target for one set, based on the matching set from last time
   function targetFor(p, step){
     if(step==null) step=2.5;
-    if(p.reps>=10) return {weight:Math.round((p.weight+step)*10)/10, reps:p.reps, why:"up"};
-    if(p.reps>=5)  return {weight:p.weight, reps:p.reps+1, why:"reps"};
+    const th=repsThresholds();
+    if(p.reps>=th.up)   return {weight:Math.round((p.weight+step)*10)/10, reps:p.reps, why:"up"};
+    if(p.reps>=th.reps) return {weight:p.weight, reps:p.reps+1, why:"reps"};
     return {weight:p.weight, reps:Math.max(p.reps,1), why:"same"};
   }
   // full plan for today: one target per set of the previous session
@@ -1365,6 +1538,27 @@
     document.getElementById("userAddBtn").textContent="更新";
     document.getElementById("userEditCancel").style.display="block";
     inp.focus();
+  }
+
+  // ---- profile edit ----
+  function openProfileModal(){
+    const p=data.profile||{};
+    selectChip("profileGender", p.gender||"unspecified");
+    selectChip("profileExperience", p.experience||"intermediate");
+    selectChip("profilePurpose", p.purpose||"hypertrophy");
+    document.getElementById("profileModal").classList.add("open");
+  }
+  function closeProfileModal(){ document.getElementById("profileModal").classList.remove("open"); }
+  async function saveProfile(){
+    data.profile={
+      gender: pickChip("profileGender"),
+      experience: pickChip("profileExperience"),
+      purpose: pickChip("profilePurpose")
+    };
+    await save();
+    renderAll();
+    closeProfileModal();
+    toast("プロフィールを更新しました");
   }
 
   async function runRecovery(){
@@ -1957,6 +2151,11 @@
     document.getElementById("userNameInput").addEventListener("keydown",e=>{ if(e.key==="Enter") commitUser(); });
     document.getElementById("userRecoverBtn").addEventListener("click",runRecovery);
     document.getElementById("userDiagBtn").addEventListener("click",runDiagnostics);
+    ["profileGender","profileExperience","profilePurpose"].forEach(wireSingleSelectChips);
+    document.getElementById("userProfileBtn").addEventListener("click",()=>{ closeUserSheet(); openProfileModal(); });
+    document.getElementById("profileCancel").addEventListener("click",closeProfileModal);
+    document.getElementById("profileSave").addEventListener("click",saveProfile);
+    document.getElementById("profileModal").addEventListener("click",e=>{ if(e.target.id==="profileModal") closeProfileModal(); });
     document.getElementById("noSaveX").addEventListener("click",()=>document.getElementById("noSave").classList.remove("show"));
 
     // event delegation for dynamic delete/edit buttons
