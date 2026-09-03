@@ -36,6 +36,11 @@ node -e "const fs=require('fs');const h=fs.readFileSync('index.html','utf8');con
 
 `__name` は一覧が壊れても名前ごと復元できるよう、各ユーザーblobに自己記述として持たせている。消さないこと。
 
+### 初回登録 (onboarding) とプロフィール
+本当に何も無い初回起動時だけ（`loadMeta`、迷子データ復元も旧データ移行も無い場合）、`showOnboarding()`が名前・性別・トレーニング歴・目的を聞く全画面を出す。結果は各ユーザーblobの`data.profile`（`{gender, experience, purpose}`）に保存され、ユーザー切り替えシートの「プロフィールを編集」（`openProfileModal`/`saveProfile`）から後から変更できる。
+- `profile.purpose`（`strength`/`hypertrophy`/`cut`）は`targetFor`のしきい値（`PURPOSE_THRESHOLDS`）を切り替える: 筋力アップ=5回、筋量アップ=10回（デフォルト）、減量=15回以上で重量アップ。`profile`が無い既存ユーザーはhypertrophy扱いにフォールバックする。
+- `gender`/`experience`は現状プロフィール保存のみで、計算には使っていない。
+
 ### 埋め込みデータ (SUGANO_BUNDLE)
 `<script id="sugano-bundle" src="sugano-bundle.local.js">` が、あるユーザー(菅野涼太)のExcelから変換したセット（4,000件超、随時Excel取り込みで増える）を読み込む。初回に一度だけ取り込まれる。**このデータを破壊しないこと。** 破壊的変更をする関数（削除・マージ）は、必ず件数を確認してから。
 
