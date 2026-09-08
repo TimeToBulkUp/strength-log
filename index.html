@@ -429,18 +429,12 @@
   .ins-guide{margin-top:13px;padding-top:13px;border-top:1px solid var(--line-soft);}
   .g-label{font-family:"Oswald",sans-serif;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:5px;display:flex;align-items:center;gap:9px;}
   .g-prog{font-size:10px;letter-spacing:.06em;color:var(--muted);background:var(--surface-2);border:1px solid var(--line-soft);border-radius:20px;padding:2px 9px;font-weight:500;text-transform:none;}
-  .g-rest{margin-top:12px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
-  .g-rest-label{font-size:11px;color:var(--faint);margin-right:2px;}
-  .g-rest-chip{font-size:11px;color:var(--muted);background:var(--surface-2);border:1px solid var(--line-soft);border-radius:6px;padding:3px 8px;}
-  .g-rest-chip b{font-family:"Oswald",sans-serif;font-size:12px;color:var(--text);font-weight:600;font-variant-numeric:tabular-nums;margin-left:2px;}
   .g-done{font-size:13px;color:var(--muted);line-height:1.7;}
   .g-done b{font-family:"Oswald",sans-serif;font-size:15px;color:var(--text);font-variant-numeric:tabular-nums;}
   .g-done b.up{color:var(--up);}
   .g-main{font-family:"Oswald",sans-serif;font-size:30px;font-weight:600;color:var(--text);line-height:1;font-variant-numeric:tabular-nums;}
   .g-main span{font-size:13px;color:var(--muted);font-family:"Noto Sans JP",sans-serif;font-weight:400;margin:0 3px;}
   .g-reason{font-size:12px;color:var(--muted);margin-top:7px;line-height:1.55;}
-  .apply-btn{margin-top:13px;width:100%;height:44px;background:var(--surface-2);border:1px solid var(--accent-dim);color:var(--accent);border-radius:9px;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:.12s;}
-  .apply-btn:active{background:var(--accent);color:var(--bg);border-color:var(--accent);}
   .ins-first{font-size:13px;color:var(--muted);line-height:1.6;text-align:center;}
 
   /* ---------- Split chips (record tab) ---------- */
@@ -901,6 +895,7 @@
   }
 
   async function save(){
+    invalidateSessionMap(); // data.sets の変更はすべて save() を通るので、ここで一括して無効化する
     const u=meta.users.find(x=>x.id===meta.currentUserId);
     if(u) data.__name = u.name;   // self-describing blob: survives index loss
     await sSet(uKey(meta.currentUserId), JSON.stringify(data));
@@ -1148,6 +1143,39 @@
   function todayKey(){ return dateKey(Date.now()); }
   function fmtDateFull(key){ const [y,m,d]=key.split("-").map(Number); const dt=new Date(y,m-1,d); return {main:m+"/"+d, sub:"("+WD[dt.getDay()]+")", year:y}; }
 
+  // ---- session grouping (日またぎを1セッションに結合) ----
+  // 深夜練習で日付をまたいでも、前のセットから1時間以内なら同じセッション（同じ日）として扱う。
+  // dateKey/todayKey はラベル表示用にそのまま残し、集計・グルーピングだけこちらに差し替える。
+  const SESSION_GAP_MS = 60*60*1000; // 1時間
+
+  let _sessionMap = null; // {setId: セッション所属日key}
+  function sessionMap(){
+    if(_sessionMap) return _sessionMap;
+    const sorted = data.sets.slice().sort((a,b)=>a.ts-b.ts);
+    const map = {}; let prevTs=null, prevKey=null;
+    for(const s of sorted){
+      const base = dateKey(s.ts);
+      let key = base;
+      if(prevTs!=null && (s.ts - prevTs) <= SESSION_GAP_MS && prevKey !== base){
+        key = prevKey; // 日付が変わったが1時間以内 → 前セッションを継承
+      }
+      map[s.id] = key;
+      prevTs = s.ts; prevKey = key;
+    }
+    _sessionMap = map;
+    return map;
+  }
+  function sessionKey(s){ return sessionMap()[s.id] || dateKey(s.ts); }
+  function invalidateSessionMap(){ _sessionMap = null; }
+  // 今記録すると（または継続中セッションは）どのセッションキーになるか
+  function currentSessionKey(){
+    if(data.sets.length){
+      const last = data.sets.reduce((a,b)=> b.ts>a.ts ? b : a);
+      if(Date.now() - last.ts <= SESSION_GAP_MS) return sessionKey(last);
+    }
+    return todayKey();
+  }
+
   // ---- toast ----
   let toastT;
   function toast(msg){
@@ -1168,12 +1196,12 @@
   // ---- per-exercise insight (current vs previous + today's target) ----
   function exSessions(exId){
     const m={};
-    data.sets.forEach(s=>{ if(s.exId===exId){ const k=dateKey(s.ts); (m[k]=m[k]||[]).push(s); } });
+    data.sets.forEach(s=>{ if(s.exId===exId){ const k=sessionKey(s); (m[k]=m[k]||[]).push(s); } });
     return m;
   }
   function todaySetsOf(exId){
-    const tk=todayKey();
-    return data.sets.filter(s=>s.exId===exId && dateKey(s.ts)===tk).sort((a,b)=>a.ts-b.ts);
+    const csk=currentSessionKey();
+    return data.sets.filter(s=>s.exId===exId && sessionKey(s)===csk).sort((a,b)=>a.ts-b.ts);
   }
   function todayExVol(exId){ let v=0; todaySetsOf(exId).forEach(s=>v+=s.weight*s.reps); return v; }
   function prevSession(exId){
@@ -1182,8 +1210,8 @@
   }
   // all past sessions (excluding today), newest first
   function pastSessionsList(exId){
-    const m=exSessions(exId); const tk=todayKey();
-    const keys=Object.keys(m).filter(k=>k<tk).sort((a,b)=>b.localeCompare(a));
+    const m=exSessions(exId); const csk=currentSessionKey();
+    const keys=Object.keys(m).filter(k=>k!==csk).sort((a,b)=>b.localeCompare(a));
     return keys.map(k=>{
       const sets=m[k].slice().sort((a,b)=>a.ts-b.ts);
       let vol=0; sets.forEach(s=>vol+=s.weight*s.reps);
@@ -1219,12 +1247,12 @@
   // 使われた重量どうしの最大公約数 ≒ そのマシン/プレートの最小刻み。
   // データが少ない・ばらつきすぎて信頼できない場合は null（呼び出し側で既定値にフォールバック）。
   function inferStep(exId){
-    const ws=[...new Set(data.sets.filter(s=>s.exId===exId).map(s=>Math.round(s.weight*10)))].sort((a,b)=>a-b);
+    const ws=[...new Set(data.sets.filter(s=>s.exId===exId).map(s=>Math.round(s.weight*100)))].sort((a,b)=>a-b);
     if(ws.length<2) return null;
     let g=0;
     for(let i=1;i<ws.length;i++) g=gcdInt(g, ws[i]-ws[i-1]);
     if(!g) return null;
-    const step=g/10;
+    const step=g/100;
     return (step>=0.5 && step<=10) ? step : null;
   }
   // 重量アップ/回数+1に切り替わる回数のしきい値。目的（オンボーディングで選択）ごとに変える。
@@ -1241,14 +1269,75 @@
   function targetFor(p, step){
     if(step==null) step=2.5;
     const th=repsThresholds();
-    if(p.reps>=th.up)   return {weight:Math.round((p.weight+step)*10)/10, reps:p.reps, why:"up"};
+    if(p.reps>=th.up)   return {weight:roundW(p.weight+step), reps:p.reps, why:"up"};
     if(p.reps>=th.reps) return {weight:p.weight, reps:p.reps+1, why:"reps"};
     return {weight:p.weight, reps:Math.max(p.reps,1), why:"same"};
   }
+  // ---- 上級者向け: トレンド学習式（直近の伸び方から次の重量を予測） ----
+  // recent = recentSessions(exId, 3)（新しい順）
+  function advTarget(recent, i, step, th){
+    const at = ses => ses && ses.sets[i];
+    const last = at(recent[0]); if(!last) return null;
+    const w0=last.weight, r0=last.reps;
+    const s1=at(recent[1]), s2=at(recent[2]);
+    const w1 = s1 ? s1.weight : null, w2 = s2 ? s2.weight : null;
+
+    // 直近3セッションが一定幅で上がっていればトレンドありと判定
+    let delta = 0;
+    if(w1!=null && w2!=null && w0>w1 && w1>w2 &&
+       Math.abs((w0-w1)-(w1-w2)) <= step){
+      delta = Math.round((w0-w1)/step)*step; // stepの倍数へ
+    }
+
+    if(delta>0){
+      const weight = snapStep(w0 + delta, step);
+      const steps  = Math.max(1, Math.round(delta/step));
+      const reps   = Math.max(th.reps, r0 - (steps>=2 ? 2 : 1)); // ジャンプ幅→1〜2、下限=floor
+      return {weight, reps, why:"up"};
+    }
+    // トレンドなし → 既存 targetFor にフォールバック（回数の積み直し／同stepの上げ幅）
+    const t = targetFor(last, step);
+    // 既存ロジックで1段階上げた場合は回数を1つ落とす（ジャンプ＝なだらかな回数で吸収）
+    if(t.why==="up") t.reps = Math.max(th.reps, t.reps - 1);
+    return t;
+  }
+
+  // ---- 中級者・初心者向け: 複合プログレッション式（規定回数×全セットで+1段階） ----
+  function doubleTargets(prev, step, th, nSess){
+    const goal = th.up;
+    const sets = prev.sets;
+    const n = sets.length || 3;
+    const W = sets.map(s=>s.weight), R = sets.map(s=>s.reps);
+    const Wlow = Math.min(...W), Whigh = Math.max(...W);
+    const hit  = i => R[i] >= goal;
+    const lead = (nSess < 3) ? 2 : 1; // 始めたて（過去セッション数<3）は2セットずつ繰り上げ
+    const mk   = (w, why="same") => ({weight: snapStep(w, step), reps: goal, why});
+    const stepUp = base => Array.from({length:n}, (_,i)=> i<lead ? mk(base+step,"up") : mk(base));
+
+    if(Whigh > Wlow){
+      // 繰り上げ進行中（先頭=Whigh, 残り=Wlow）
+      const leadCount  = W.filter(w=>w===Whigh).length;
+      const leadAllHit = W.map((w,i)=>({w,i})).filter(o=>o.w===Whigh).every(o=>hit(o.i));
+      if(leadAllHit){
+        const newLead = Math.min(n, leadCount + lead);
+        if(newLead >= n) return stepUp(Whigh); // 全セットがWhighに到達 → 次の+1段階へ
+        return Array.from({length:n}, (_,i)=> i<newLead ? mk(Whigh,"up") : mk(Wlow));
+      }
+      return Array.from({length:n}, (_,i)=> mk(W[i])); // 先頭未達 → 現状維持
+    } else {
+      // 単一重量W
+      const allHit = R.slice(0,n).every((_,i)=>hit(i)) && sets.length >= Math.min(n,3);
+      if(allHit) return stepUp(Wlow); // 全セット規定回数 → +1段階
+      return Array.from({length:n}, (_,i)=> mk(Wlow)); // まだ → 現状維持、規定回数狙い
+    }
+  }
+
   // full plan for today: one target per set of the previous session
   function planFor(exId){
     const ex=data.exercises.find(e=>e.id===exId);
     const step=(ex && typeof ex.step==="number") ? ex.step : (inferStep(exId) ?? 2.5);
+    const th=repsThresholds();
+    const mode=(data.profile && data.profile.experience==="advanced") ? "adv" : "dbl";
     const list=pastSessionsList(exId);
     const basisIdx=targetBasisIndex(list);
     const prev=basisIdx>=0 ? list[basisIdx] : null;
@@ -1262,26 +1351,34 @@
     }
 
     let targets;
-    const CATCHUP_REPS_CAP=30;
-    if(priorToPrev && priorToPrev.sets.length>0 && prev.sets.length===priorToPrev.sets.length+1){
-      // 前回はボリュームが足りず、いつもよりちょうど1セット多く「追加セット」をしていた。
-      // 今回はいつも通りのセット数のまま、最終セットの回数だけ増やして前回の総ボリュームを超えられるようにする。
-      const usualCount=priorToPrev.sets.length;
-      const base=priorToPrev.sets.slice(0,usualCount-1).map(s=>targetFor(s, step));
-      const lastSrc=priorToPrev.sets[usualCount-1];
-      const soFarVol=base.reduce((a,t)=>a+t.weight*t.reps,0);
-      const naturalLast=targetFor(lastSrc, step);
-      // 必ず前回のボリュームを「超える」回数（ちょうど届く回数ではなく+1する）
-      const neededReps=lastSrc.weight>0 ? Math.floor((prev.vol-soFarVol)/lastSrc.weight)+1 : naturalLast.reps;
-      const reps=Math.max(naturalLast.reps, neededReps, 1);
-      if(reps<=CATCHUP_REPS_CAP){
-        targets=base; targets.push({weight:lastSrc.weight, reps, why:"catchup"});
-      } else {
-        // 回数が現実的でない（=単なるセット数増ではなく別物の可能性）ときは通常通りに戻す
-        targets=prev.sets.map(s=>targetFor(s, step));
-      }
+    if(mode==="dbl"){
+      // 中級者・初心者: 複合プログレッション式。catchup分岐には入らず、こちらで完結させる。
+      targets=doubleTargets(prev, step, th, list.length);
     } else {
-      targets=prev.sets.map(s=>targetFor(s, step));
+      // 上級者: トレンド学習式。catchup（前回の追加セット吸収）の骨組みは流用し、
+      // 各セットの目標を作る部分だけ advTarget に差し替える。
+      const recent=recentSessions(exId, 3);
+      const CATCHUP_REPS_CAP=30;
+      if(priorToPrev && priorToPrev.sets.length>0 && prev.sets.length===priorToPrev.sets.length+1){
+        // 前回はボリュームが足りず、いつもよりちょうど1セット多く「追加セット」をしていた。
+        // 今回はいつも通りのセット数のまま、最終セットの回数だけ増やして前回の総ボリュームを超えられるようにする。
+        const usualCount=priorToPrev.sets.length;
+        const base=priorToPrev.sets.slice(0,usualCount-1).map(s=>targetFor(s, step));
+        const lastSrc=priorToPrev.sets[usualCount-1];
+        const soFarVol=base.reduce((a,t)=>a+t.weight*t.reps,0);
+        const naturalLast=targetFor(lastSrc, step);
+        // 必ず前回のボリュームを「超える」回数（ちょうど届く回数ではなく+1する）
+        const neededReps=lastSrc.weight>0 ? Math.floor((prev.vol-soFarVol)/lastSrc.weight)+1 : naturalLast.reps;
+        const reps=Math.max(naturalLast.reps, neededReps, 1);
+        if(reps<=CATCHUP_REPS_CAP){
+          targets=base; targets.push({weight:lastSrc.weight, reps, why:"catchup"});
+        } else {
+          // 回数が現実的でない（=単なるセット数増ではなく別物の可能性）ときは通常通りに戻す
+          targets=prev.sets.map((s,i)=>advTarget(recent,i,step,th) || targetFor(s, step));
+        }
+      } else {
+        targets=prev.sets.map((s,i)=>advTarget(recent,i,step,th) || targetFor(s, step));
+      }
     }
 
     const total=targets.length;
@@ -1360,7 +1457,7 @@
               let c = "";
               if(compareTo && compareTo[i] && x.weight*x.reps > compareTo[i].weight*compareTo[i].reps) c = " beat";
               const endW = (isToday && i===last) ? " rowend" : "";
-              tds += `<td class="w${c}">${fmtNum(x.weight)}</td><td class="r${c}${endW}">${x.reps}</td>`;
+              tds += `<td class="w${c}">${fmtW(x.weight)}</td><td class="r${c}${endW}">${x.reps}</td>`;
             }
             return `<tr class="${cls}">${tds}</tr>`;
           }
@@ -1383,7 +1480,7 @@
               if(!t){ tds += `<td class="w empty">·</td><td class="r empty">·</td>`; continue; }
               const isNext = (i === s.doneCount);
               const c = isNext ? " next" : (i < s.doneCount ? " past" : "");
-              tds += `<td class="w${c}">${fmtNum(t.weight)}</td><td class="r${c}">${t.reps}</td>`;
+              tds += `<td class="w${c}">${fmtW(t.weight)}</td><td class="r${c}">${t.reps}</td>`;
             }
             rows += `<tr class="row-plan">${tds}</tr>`;
           }
@@ -1404,19 +1501,10 @@
     if(s.kind==="ok"){
       const t=s.next;
       const setNo=s.doneCount+1;
-      const rest=s.remaining.slice(1);
-      const restHtml = rest.length
-        ? `<div class="g-rest"><span class="g-rest-label">このあと</span>${rest.map((x,i)=>`<span class="g-rest-chip">${setNo+1+i}セット目 <b>${fmtNum(x.weight)}×${x.reps}</b></span>`).join("")}</div>`
-        : `<div class="g-rest"><span class="g-rest-label">これが最終セットです</span></div>`;
       guideHtml=`<div class="ins-guide">
         <div class="g-label">次のセットの目安 <span class="g-prog">${setNo} / ${s.total} セット目</span></div>
-        <div class="g-main num">${fmtNum(t.weight)}<span>kg</span> × ${t.reps}</div>
+        <div class="g-main num">${fmtW(t.weight)}<span>kg</span> × ${t.reps}</div>
         <div class="g-reason">${WHY[t.why]} ・ 前回の${setNo}セット目が基準 ・ 推定1RM ${s.est}kg</div>
-        <button class="apply-btn" data-apply data-w="${t.weight}" data-r="${t.reps}">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
-          この目安を入力
-        </button>
-        ${restHtml}
       </div>`;
     } else if(s.kind==="done"){
       const diff=tVol-s.prevVol;
@@ -1429,12 +1517,8 @@
       const t=s.next;
       guideHtml=`<div class="ins-guide">
         <div class="g-label">次のセットの目安</div>
-        <div class="g-main num">${fmtNum(t.weight)}<span>kg</span> × ${t.reps}</div>
+        <div class="g-main num">${fmtW(t.weight)}<span>kg</span> × ${t.reps}</div>
         <div class="g-reason">今日のセットを基準にした目安 ・ 推定1RM ${s.est}kg</div>
-        <button class="apply-btn" data-apply data-w="${t.weight}" data-r="${t.reps}">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
-          この目安を入力
-        </button>
       </div>`;
     } else {
       guideHtml=`<div class="ins-guide"><div class="ins-first">この種目はまだ記録がありません。<br>軽めの重量でフォームを確認しながら始めて、感覚をつかんだら少しずつ増やしていきましょう。</div></div>`;
@@ -1661,8 +1745,8 @@
 
   // ---- render: today ----
   function renderToday(){
-    const tk=todayKey();
-    const todays=data.sets.filter(s=>dateKey(s.ts)===tk);
+    const csk=currentSessionKey();
+    const todays=data.sets.filter(s=>sessionKey(s)===csk);
     let vol=0; todays.forEach(s=>vol+=s.weight*s.reps);
     document.getElementById("todaySets").textContent=todays.length;
     document.getElementById("todayVol").innerHTML=fmtNum(vol)+'<span class="unit">kg</span>';
@@ -1693,7 +1777,7 @@
   function setChip(s, withDelete){
     const bestSet=best(s.exId);
     const isPr = bestSet && bestSet.id===s.id && s.weight>0;
-    return `<span class="setchip${isPr?" pr":""}">${fmtNum(s.weight)}<i>×</i>${s.reps}${withDelete?`<button class="chip-x" data-del="${s.id}" aria-label="削除">✕</button>`:""}</span>`;
+    return `<span class="setchip${isPr?" pr":""}">${fmtW(s.weight)}<i>×</i>${s.reps}${withDelete?`<button class="chip-x" data-del="${s.id}" aria-label="削除">✕</button>`:""}</span>`;
   }
 
   function setRow(s,idx,withDelete){
@@ -1701,13 +1785,18 @@
     const isPr = bestSet && bestSet.id===s.id && s.weight>0;
     return `<div class="set">
       <div class="idx num">${idx}</div>
-      <div class="lift">${fmtNum(s.weight)}<span class="kg">kg</span><span class="x">×</span>${s.reps}</div>
+      <div class="lift">${fmtW(s.weight)}<span class="kg">kg</span><span class="x">×</span>${s.reps}</div>
       ${isPr?'<span class="pr">自己ベスト</span>':''}
       ${withDelete?`<button class="icon-btn" data-del="${s.id}" aria-label="削除">${TRASH}</button>`:''}
     </div>`;
   }
 
   function fmtNum(n){ return Number.isInteger(n)?n:(Math.round(n*10)/10); }
+
+  // 重量専用: ボリューム/差分は引き続き fmtNum（小数1桁）。重量は入力・計算・表示すべて小数2桁で扱う。
+  const roundW = n => Math.round(n*100)/100;                    // 重量の計算結果を小数2桁に丸める
+  const fmtW = n => Number.isInteger(n) ? n : roundW(n);         // 重量の表示（末尾ゼロなし・最大2桁）
+  const snapStep = (n, step) => roundW(Math.round(n/step)*step); // stepの倍数に丸める
 
   // ---- render: history ----
   function splitsForDay(exIds){
@@ -1717,7 +1806,7 @@
   }
   async function moveDay(oldKey,newKey){
     if(!newKey || oldKey===newKey) return;
-    const moving=data.sets.filter(s=>dateKey(s.ts)===oldKey).sort((a,b)=>a.ts-b.ts);
+    const moving=data.sets.filter(s=>sessionKey(s)===oldKey).sort((a,b)=>a.ts-b.ts);
     const [y,m,d]=newKey.split("-").map(Number);
     const base=Date.UTC(y,m-1,d,12,0,0);
     moving.forEach((s,i)=>{ s.ts = base + i*60000; });
@@ -1738,7 +1827,7 @@
     }
     // group by date desc
     const byDate={}; const days=[];
-    sets.forEach(s=>{ const k=dateKey(s.ts); if(!byDate[k]){byDate[k]=[];days.push(k);} byDate[k].push(s); });
+    sets.forEach(s=>{ const k=sessionKey(s); if(!byDate[k]){byDate[k]=[];days.push(k);} byDate[k].push(s); });
     days.sort((a,b)=>b.localeCompare(a));
     const totalDays=days.length;
     const shown=days.slice(0, historyLimit);   // only render recent days
@@ -1807,7 +1896,7 @@
   function exRowHtml(e, splitId, idx, total, editing){
     const b=best(e.id);
     const cnt=data.sets.filter(s=>s.exId===e.id).length;
-    const meta = cnt ? `${cnt}セット ・ ベスト <span class="best">${fmtNum(b.weight)}×${b.reps}</span>` : "記録なし";
+    const meta = cnt ? `${cnt}セット ・ ベスト <span class="best">${fmtW(b.weight)}×${b.reps}</span>` : "記録なし";
     let order="", removeBtn="", editBtn="";
     if(editing){
       if(splitId){
@@ -2008,7 +2097,7 @@
     const r=parseInt(document.getElementById("inReps").value,10);
     if(isNaN(w)||w<0){ toast("重量を入力してください"); return; }
     if(isNaN(r)||r<=0){ toast("回数を入力してください"); return; }
-    data.sets.push({id:uid(),exId,weight:w,reps:r,ts:Date.now()});
+    data.sets.push({id:uid(),exId,weight:roundW(w),reps:r,ts:Date.now()});
     await save();
     renderInsight(); renderToday(); renderHistory(); renderSplits();
     toast("記録しました");
@@ -2076,7 +2165,7 @@
   function step(type,delta){
     if(type==="w"){
       const el=document.getElementById("inWeight");
-      let v=parseFloat(el.value)||0; v=Math.max(0,Math.round((v+delta)*10)/10); el.value=v;
+      let v=parseFloat(el.value)||0; v=Math.max(0, roundW(v+delta)); el.value=v;
     }else{
       const el=document.getElementById("inReps");
       let v=parseInt(el.value,10)||0; v=Math.max(0,v+delta); el.value=v;
@@ -2163,7 +2252,6 @@
       const del=e.target.closest("[data-del]"); if(del){ delSet(del.dataset.del); return; }
       const delex=e.target.closest("[data-delex]"); if(delex){ delEx(delex.dataset.delex); return; }
       const editex=e.target.closest("[data-editex]"); if(editex){ openExModal(editex.dataset.editex); return; }
-      const ap=e.target.closest("[data-apply]"); if(ap){ document.getElementById("inWeight").value=ap.dataset.w; document.getElementById("inReps").value=ap.dataset.r; toast("目安を入力しました"); return; }
       const editsp=e.target.closest("[data-editsplit]"); if(editsp){ openSplitModal(editsp.dataset.editsplit); return; }
       const delsp=e.target.closest("[data-delsplit]"); if(delsp){ delSplit(delsp.dataset.delsplit); return; }
       const em=e.target.closest("[data-editmode]"); if(em){ editModeSplit = em.dataset.editmode || null; renderSplits(); return; }
