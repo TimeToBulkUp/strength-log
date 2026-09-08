@@ -39,7 +39,7 @@ node -e "const fs=require('fs');const h=fs.readFileSync('index.html','utf8');con
 ### 初回登録 (onboarding) とプロフィール
 本当に何も無い初回起動時だけ（`loadMeta`、迷子データ復元も旧データ移行も無い場合）、`showOnboarding()`が名前・性別・トレーニング歴・目的を聞く全画面を出す。結果は各ユーザーblobの`data.profile`（`{gender, experience, purpose}`）に保存され、ユーザー切り替えシートの「プロフィールを編集」（`openProfileModal`/`saveProfile`）から後から変更できる。
 - `profile.purpose`（`strength`/`hypertrophy`/`cut`）は`targetFor`のしきい値（`PURPOSE_THRESHOLDS`）を切り替える: 筋力アップ=5回、筋量アップ=10回（デフォルト）、減量=15回以上で重量アップ。`profile`が無い既存ユーザーはhypertrophy扱いにフォールバックする。
-- `gender`/`experience`は現状プロフィール保存のみで、計算には使っていない。
+- `gender`は現状プロフィール保存のみで、計算には使っていない。`experience`（`beginner`/`intermediate`/`advanced`）は`planFor`の目安ロジックの分岐に使う（下記）。
 
 ### 埋め込みデータ (SUGANO_BUNDLE)
 `<script id="sugano-bundle" src="sugano-bundle.local.js">` が、あるユーザー(菅野涼太)のExcelから変換したセット（4,000件超、随時Excel取り込みで増える）を読み込む。初回に一度だけ取り込まれる。**このデータを破壊しないこと。** 破壊的変更をする関数（削除・マージ）は、必ず件数を確認してから。
@@ -73,7 +73,13 @@ tail -n +<その行+1> index.html >> index.personal.html
 - 履歴タブ: `renderHistory（30日ずつページング）/ setChip / splitsForDay / moveDay`
 - 分割タブ: `renderSplits / exRowHtml / openSplitModal / openAddExSheet / moveExercise`
 - ユーザー: `renderUserPill / renderUserList / switchUser / commitUser / runRecovery`
-- 目安ロジック: `planFor / targetFor / recentSessions`（前回の同じ順のセットを基準に、10回以上で+増量幅、5〜9回で+1回）。増量幅は種目ごとの`exercise.step`（kg、種目編集モーダルで設定、未設定時は2.5kgにフォールバック）。
+- 目安ロジック: `planFor` が `profile.experience==="advanced"` かどうかで2方式に分岐する。
+  - **中級者・初心者（既定）**: `doubleTargets`。規定回数（`repsThresholds().up`）に全セットが達したら+1段階、達成までは同じ重量で回数を狙う複合プログレッション式。始めたて（過去セッション数<3）は繰り上げが2セットずつ。
+  - **上級者**: `advTarget`（`targetFor`にフォールバックあり）。直近3セッション（`recentSessions(exId,3)`）の重量が一定幅で伸びていればそのトレンドで次の重量を予測するトレンド学習式。
+  - 前回が「ボリューム未達の追加セット」で通常よりちょうど1セット多かった場合の吸収ロジック（catchup、`planFor`内）は上級者モードのみに残っている（中級・初心者は`doubleTargets`が完結して処理するため通らない）。
+  - 増量幅(`step`)は種目ごとの`exercise.step`（kg、種目編集モーダルで設定）→ `inferStep(exId)`（履歴から自動推定）→ `2.5`（既定）の優先順で決まる。
+  - 重量は入力・計算・刻み推定・表示すべて**小数第2位**まで対応（`roundW`/`fmtW`/`snapStep`）。ボリューム・差分表示は従来通り`fmtNum`（小数1桁）のまま区別すること。
+- セッションのグルーピング: `sessionKey`/`currentSessionKey`/`sessionMap`が、前のセットから1時間以内なら日付をまたいでも同じセッション（同じ日）として扱う（深夜練習対応）。`dateKey`/`todayKey`はラベル表示・インポート時の重複判定にのみ残っており、集計系（`exSessions`/`todaySetsOf`/`pastSessionsList`/`renderToday`/`renderHistory`/`moveDay`）は`sessionKey`基準。`_sessionMap`は`save()`内で毎回無効化される。
 
 ## 変更時のルール
 
