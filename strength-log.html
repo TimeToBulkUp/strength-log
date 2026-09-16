@@ -486,6 +486,17 @@
   .newex-row input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(246,166,9,.14);}
   .newex-btn{flex:none;width:82px;height:var(--tap);}
   .ex-delete{width:100%;margin-top:14px;background:none;border:none;color:var(--danger);font-family:inherit;font-size:12px;cursor:pointer;text-decoration:underline;}
+  .ex-archive{width:100%;margin-top:14px;background:none;border:none;color:var(--muted);font-family:inherit;font-size:12px;cursor:pointer;text-decoration:underline;}
+
+  .vol-preview{display:flex;justify-content:space-between;align-items:center;gap:10px;
+    margin-top:10px;min-height:20px;font-size:14px;color:var(--muted);}
+  .vol-preview:empty{display:none;}
+  .vp-vol b{color:var(--text);}
+  .vp-cmp{display:inline-flex;flex-direction:column;align-items:flex-end;font-weight:600;line-height:1.2;}
+  .vp-cmp.up{color:var(--up);}
+  .vp-cmp.down{color:var(--muted);}
+  .vp-cmp.muted{font-weight:400;}
+  .vp-sub{font-size:11px;font-weight:400;color:var(--muted);}
 
   @media (prefers-reduced-motion:reduce){
     *{animation:none !important;transition:none !important;}
@@ -563,6 +574,7 @@
           </div>
         </div>
         <button class="btn-primary" id="recordBtn">セットを記録</button>
+        <div id="volPreview" class="vol-preview"></div>
       </div>
 
       <div class="eyebrow">今日のトレーニング</div>
@@ -626,7 +638,25 @@
       <button class="btn-ghost" id="exCancel">キャンセル</button>
       <button class="btn-solid" id="exSave">保存</button>
     </div>
+    <button class="ex-archive" id="exArchive" style="display:none"></button>
     <button class="ex-delete" id="exDelete" style="display:none">この種目を完全に削除（記録も消えます）</button>
+  </div>
+</div>
+
+<!-- Add a forgotten set to a past session -->
+<div class="modal-bg" id="addSetModal">
+  <div class="modal">
+    <h3>セットを追加</h3>
+    <div class="field"><label>追加先</label><div id="addSetWhen" class="edit-hint"></div></div>
+    <div class="field"><label for="addSetEx">種目</label><select id="addSetEx"></select></div>
+    <div class="field"><label>重量 <span class="unit-tag">kg</span></label>
+      <input id="addSetW" class="num" inputmode="decimal" placeholder="0"></div>
+    <div class="field"><label>回数 <span class="unit-tag">reps</span></label>
+      <input id="addSetR" class="num" inputmode="numeric" placeholder="0"></div>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="addSetCancel">キャンセル</button>
+      <button class="btn-solid" id="addSetSave">保存</button>
+    </div>
   </div>
 </div>
 
@@ -1525,6 +1555,35 @@
     }
 
     box.innerHTML=`<div class="insight-inner">${statsHtml}${compareHtml}${guideHtml}</div>`;
+    renderVolPreview();
+  }
+
+  // ---- live volume preview under the record button ----
+  function renderVolPreview(){
+    const box = document.getElementById("volPreview");
+    if(!box) return;
+    const exId = document.getElementById("exSelect").value;
+    const w = parseFloat(document.getElementById("inWeight").value);
+    const r = parseInt(document.getElementById("inReps").value, 10);
+    if(!exId || isNaN(w) || isNaN(r) || w < 0 || r <= 0){ box.innerHTML=""; return; }
+
+    const vol = w * r;
+    const idx = todaySetsOf(exId).length;            // これから入れるセットの位置(0-based)
+    const prev = prevSession(exId);                  // 前回＝直近の過去セッション
+    const pv = prev && prev.sets[idx] ? prev.sets[idx] : null;
+
+    let cmp;
+    if(pv){
+      const pvol = pv.weight * pv.reps;
+      const diff = vol - pvol;
+      const sign = diff >= 0 ? "up" : "down";
+      const arrow = diff >= 0 ? "▲" : "▼";
+      cmp = `<span class="vp-cmp ${sign}">${arrow}${fmtNum(Math.abs(diff))}
+               <span class="vp-sub">前回${idx+1}セット目 ${fmtNum(pvol)}</span></span>`;
+    } else {
+      cmp = `<span class="vp-cmp muted">前回の同セットなし</span>`;
+    }
+    box.innerHTML = `<span class="vp-vol">このセット <b class="num">${fmtNum(vol)}</b> kg</span>${cmp}`;
   }
 
   // ---- SVG ----
@@ -1718,6 +1777,7 @@
       data.splits.forEach(s=>s.exIds.forEach(id=>inAnySplit.add(id)));
       if(inAnySplit.size) list=data.exercises.filter(e=>inAnySplit.has(e.id));
     }
+    list=list.filter(e=>!e.archived); // 一覧から隠した種目は記録の選択肢にも出さない
     const byBody={};
     list.forEach(e=>{ (byBody[e.body||"その他"] ||= []).push(e); });
     let html="";
@@ -1847,6 +1907,10 @@
         +`</div>`;
       if(editing){
         html+=`<div class="day-edit-bar"><label for="d-${k}">日付を変更</label><input type="date" id="d-${k}" class="day-date" data-histdate="${k}" value="${k}"><span class="edit-hint">つけ忘れた日に移せます</span></div>`;
+        html+=`<button class="sp-add" data-addset="${k}">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          セットを追加
+        </button>`;
       }
       // group the day's exercises by the split that covers the most of them (dominant split)
       let remaining=exOrder.slice(); const boxes=[];
@@ -1881,6 +1945,41 @@
     wrap.innerHTML=html;
   }
 
+  // ---- add a forgotten set to a past session ----
+  let addSetKey = null;
+  function openAddSetModal(k){
+    addSetKey = k;
+    document.getElementById("addSetEx").innerHTML =
+      data.exercises.filter(e=>!e.archived).map(e=>`<option value="${e.id}">${escapeHtml(e.name)}</option>`).join("")
+      || `<option value="">種目がありません</option>`;
+    document.getElementById("addSetWhen").textContent = fmtDateFull(k).main + " のセッションに追加";
+    document.getElementById("addSetW").value = "";
+    document.getElementById("addSetR").value = "";
+    document.getElementById("addSetModal").classList.add("open");
+  }
+  function closeAddSetModal(){
+    document.getElementById("addSetModal").classList.remove("open");
+    addSetKey = null;
+  }
+  async function saveAddSet(){
+    const exId = document.getElementById("addSetEx").value;
+    const w = roundW(parseFloat(document.getElementById("addSetW").value));
+    const r = parseInt(document.getElementById("addSetR").value, 10);
+    if(!exId){ toast("種目を選んでください"); return; }
+    if(isNaN(w) || w < 0){ toast("重量を入力してください"); return; }
+    if(isNaN(r) || r <= 0){ toast("回数を入力してください"); return; }
+
+    // そのセッションの最後のセット +1分 に置く → セッション結合込みで確実に同セッション末尾へ
+    const sessSets = data.sets.filter(s => sessionKey(s) === addSetKey);
+    const base = Math.max(...sessSets.map(s => s.ts));
+    const ts = base + 60000;
+
+    data.sets.push({ id: uid(), exId, weight: w, reps: r, ts });
+    await save();
+    closeAddSetModal();
+    renderAll();
+  }
+
   // ---- render: exercises ----
   // ---- render: split chips (record tab) ----
   function renderSplitChips(){
@@ -1911,7 +2010,7 @@
     return `<div class="sp-ex">
       ${order}
       <div class="sp-ex-body">
-        <div class="sp-ex-name">${escapeHtml(e.name)}${e.body?`<span class="bodypart-pill">${e.body}</span>`:""}</div>
+        <div class="sp-ex-name">${escapeHtml(e.name)}${e.body?`<span class="bodypart-pill">${e.body}</span>`:""}${e.archived?`<span class="bodypart-pill" style="color:var(--faint);border-color:var(--line)">非表示中</span>`:""}</div>
         <div class="sp-ex-meta">${meta}</div>
       </div>
       ${editBtn}
@@ -2004,7 +2103,7 @@
     const box=document.getElementById("addExPick");
     const sp=data.splits.find(s=>s.id===addExSplitId);
     const inSplit=new Set(sp?sp.exIds:[]);
-    const avail=data.exercises.filter(e=>!inSplit.has(e.id));
+    const avail=data.exercises.filter(e=>!inSplit.has(e.id) && !e.archived);
     if(!avail.length){
       box.innerHTML=`<div class="pick-empty">追加できる既存の種目はありません。<br>上の欄から新しく作ってください。</div>`;
       return;
@@ -2121,11 +2220,22 @@
     selectedBody=ex?ex.body:"胸";
     renderBodyChips();
     document.getElementById("exDelete").style.display = id ? "block" : "none";
+    const archiveBtn=document.getElementById("exArchive");
+    archiveBtn.style.display = id ? "block" : "none";
+    archiveBtn.textContent = (ex && ex.archived) ? "一覧に戻す" : "この種目を一覧から隠す（記録は残ります）";
     document.getElementById("exModal").classList.add("open");
     setTimeout(()=>document.getElementById("exName").focus(),120);
     validateExSave();
   }
   function closeExModal(){ document.getElementById("exModal").classList.remove("open"); editingExId=null; }
+  async function toggleExArchive(){
+    if(!editingExId) return;
+    const e=data.exercises.find(x=>x.id===editingExId);
+    if(!e) return;
+    e.archived=!e.archived;
+    await save(); renderAll(); closeExModal();
+    toast(e.archived ? "種目を一覧から隠しました" : "種目を一覧に戻しました");
+  }
   function renderBodyChips(){
     document.getElementById("bodyChips").innerHTML=BODYPARTS.map(b=>
       `<button class="chip ${b===selectedBody?'sel':''}" data-body="${b}">${b}</button>`).join("");
@@ -2170,6 +2280,7 @@
       const el=document.getElementById("inReps");
       let v=parseInt(el.value,10)||0; v=Math.max(0,v+delta); el.value=v;
     }
+    renderVolPreview();
   }
 
   // ---- nav ----
@@ -2186,6 +2297,8 @@
   function wire(){
     document.getElementById("recordBtn").addEventListener("click",recordSet);
     document.querySelectorAll(".step-btn").forEach(b=>b.addEventListener("click",()=>step(b.dataset.t,parseFloat(b.dataset.d))));
+    ["inWeight","inReps"].forEach(id =>
+      document.getElementById(id).addEventListener("input", renderVolPreview));
     document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>switchView(t.dataset.view)));
     document.getElementById("histFilter").addEventListener("change",()=>{ historyLimit=30; renderHistory(); });
     document.getElementById("historyList").addEventListener("change",e=>{
@@ -2228,7 +2341,11 @@
       it.classList.toggle("on");
     });
     document.getElementById("exDelete").addEventListener("click",()=>{ if(editingExId) delEx(editingExId); });
+    document.getElementById("exArchive").addEventListener("click",toggleExArchive);
     document.getElementById("splitModal").addEventListener("click",e=>{ if(e.target.id==="splitModal") closeSplitModal(); });
+    document.getElementById("addSetSave").addEventListener("click", saveAddSet);
+    document.getElementById("addSetCancel").addEventListener("click", closeAddSetModal);
+    document.getElementById("addSetModal").addEventListener("click", e=>{ if(e.target.id==="addSetModal") closeAddSetModal(); });
 
     document.getElementById("userPillBtn").addEventListener("click",openUserSheet);
     document.getElementById("userSheet").addEventListener("click",e=>{ if(e.target.id==="userSheet") closeUserSheet(); });
@@ -2256,6 +2373,7 @@
       const delsp=e.target.closest("[data-delsplit]"); if(delsp){ delSplit(delsp.dataset.delsplit); return; }
       const em=e.target.closest("[data-editmode]"); if(em){ editModeSplit = em.dataset.editmode || null; renderSplits(); return; }
       const lm=e.target.closest("[data-loadmore]"); if(lm){ historyLimit+=30; renderHistory(); return; }
+      const as=e.target.closest("[data-addset]"); if(as){ openAddSetModal(as.dataset.addset); return; }
       const he=e.target.closest("[data-histedit]"); if(he){ editHistDay = editHistDay===he.dataset.histedit ? null : he.dataset.histedit; renderHistory(); return; }
       const addx=e.target.closest("[data-addex]"); if(addx){ openAddExSheet(addx.dataset.addex); return; }
       const unl=e.target.closest("[data-unlink]"); if(unl){ unlinkExercise(unl.dataset.sp, unl.dataset.unlink); return; }
