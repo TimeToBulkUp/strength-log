@@ -634,6 +634,20 @@
       <label for="exStep">目安の増量幅 <span class="unit-tag">kg・空欄で自動</span></label>
       <input type="number" id="exStep" inputmode="decimal" step="0.5" min="0" placeholder="自動">
     </div>
+    <div class="field">
+      <label>種目タイプ</label>
+      <div class="chip-row" id="compoundChips">
+        <button class="chip sel" type="button" data-v="多関節">多関節</button>
+        <button class="chip" type="button" data-v="単関節">単関節</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>左右</label>
+      <div class="chip-row" id="unilateralChips">
+        <button class="chip sel" type="button" data-v="両側">両側</button>
+        <button class="chip" type="button" data-v="片側">片側</button>
+      </div>
+    </div>
     <div class="modal-actions">
       <button class="btn-ghost" id="exCancel">キャンセル</button>
       <button class="btn-solid" id="exSave">保存</button>
@@ -857,6 +871,78 @@
   const uid = () => (crypto.randomUUID ? crypto.randomUUID() : "id"+Date.now()+Math.random().toString(16).slice(2));
   const AVATAR_COLORS = ["#f6a609","#4dab7f","#e07a5f","#8b7fd6","#5aa9e6","#d98cc4"];
 
+  // ---- common exercise catalog (全員共通。id は固定・変更/使い回し禁止 — 記録・共有メニューが紐づく) ----
+  const MASTER_EXERCISES = [
+    // 胸
+    { id:"m_bench_press",        name:"ベンチプレス",                 body:"胸",  compound:true  },
+    { id:"m_db_bench_press",     name:"ダンベルベンチプレス",         body:"胸",  compound:true  },
+    { id:"m_incline_bench",      name:"インクラインベンチプレス",     body:"胸",  compound:true  },
+    { id:"m_incline_db_press",   name:"インクラインダンベルプレス",   body:"胸",  compound:true  },
+    { id:"m_chest_press_machine",name:"チェストプレス（マシン）",     body:"胸",  compound:true  },
+    { id:"m_db_fly",             name:"ダンベルフライ",               body:"胸",  compound:false },
+    { id:"m_pec_fly_machine",    name:"ペックフライ（マシン）",       body:"胸",  compound:false },
+    { id:"m_cable_crossover",    name:"ケーブルクロスオーバー",       body:"胸",  compound:false },
+    { id:"m_dips",               name:"ディップス",                   body:"胸",  compound:true  },
+    { id:"m_push_up",            name:"腕立て伏せ（プッシュアップ）", body:"胸",  compound:true  },
+    // 背中
+    { id:"m_deadlift",           name:"デッドリフト",                 body:"背中",compound:true  },
+    { id:"m_pull_up",            name:"懸垂（チンニング）",           body:"背中",compound:true  },
+    { id:"m_lat_pulldown",       name:"ラットプルダウン",             body:"背中",compound:true  },
+    { id:"m_bent_over_row",      name:"ベントオーバーロウ",           body:"背中",compound:true  },
+    { id:"m_one_arm_db_row",     name:"ワンハンドダンベルロウ",       body:"背中",compound:true, unilateral:true },
+    { id:"m_seated_row_machine", name:"シーテッドロウ（マシン）",     body:"背中",compound:true  },
+    { id:"m_cable_row",          name:"ケーブルロウ",                 body:"背中",compound:true  },
+    { id:"m_t_bar_row",          name:"Tバーロウ",                    body:"背中",compound:true  },
+    { id:"m_back_extension",     name:"バックエクステンション",       body:"背中",compound:false },
+    // 肩
+    { id:"m_ohp",                name:"ショルダープレス（バーベル）", body:"肩",  compound:true  },
+    { id:"m_db_shoulder_press",  name:"ダンベルショルダープレス",     body:"肩",  compound:true  },
+    { id:"m_shoulder_press_mac", name:"ショルダープレス（マシン）",   body:"肩",  compound:true  },
+    { id:"m_side_raise",         name:"サイドレイズ",                 body:"肩",  compound:false },
+    { id:"m_rear_raise",         name:"リアレイズ",                   body:"肩",  compound:false },
+    { id:"m_front_raise",        name:"フロントレイズ",               body:"肩",  compound:false },
+    { id:"m_face_pull",          name:"フェイスプル",                 body:"肩",  compound:false },
+    { id:"m_upright_row",        name:"アップライトロウ",             body:"肩",  compound:true  },
+    { id:"m_shrug",              name:"シュラッグ",                   body:"肩",  compound:false },
+    // 脚
+    { id:"m_squat",              name:"スクワット",                   body:"脚",  compound:true  },
+    { id:"m_leg_press",          name:"レッグプレス",                 body:"脚",  compound:true  },
+    { id:"m_hack_squat",         name:"ハックスクワット",             body:"脚",  compound:true  },
+    { id:"m_rdl",                name:"ルーマニアンデッドリフト",     body:"脚",  compound:true  },
+    { id:"m_leg_extension",      name:"レッグエクステンション",       body:"脚",  compound:false },
+    { id:"m_leg_curl",           name:"レッグカール",                 body:"脚",  compound:false },
+    { id:"m_lunge",              name:"ランジ",                       body:"脚",  compound:true, unilateral:true },
+    { id:"m_bulgarian_squat",    name:"ブルガリアンスクワット",       body:"脚",  compound:true, unilateral:true },
+    { id:"m_hip_thrust",         name:"ヒップスラスト",               body:"脚",  compound:true  },
+    { id:"m_calf_raise",         name:"カーフレイズ",                 body:"脚",  compound:false },
+    { id:"m_hip_adduction",      name:"アダクション（内転・マシン）", body:"脚",  compound:false },
+    { id:"m_hip_abduction",      name:"アブダクション（外転・マシン）",body:"脚", compound:false },
+    // 腕（二頭）
+    { id:"m_barbell_curl",       name:"バーベルカール",               body:"腕",  compound:false },
+    { id:"m_db_curl",            name:"ダンベルカール",               body:"腕",  compound:false },
+    { id:"m_hammer_curl",        name:"ハンマーカール",               body:"腕",  compound:false },
+    { id:"m_incline_db_curl",    name:"インクラインダンベルカール",   body:"腕",  compound:false },
+    { id:"m_cable_curl",         name:"ケーブルカール",               body:"腕",  compound:false },
+    { id:"m_preacher_curl",      name:"プリーチャーカール",           body:"腕",  compound:false },
+    // 腕（三頭）
+    { id:"m_triceps_pushdown",   name:"トライセプスプレスダウン",     body:"腕",  compound:false },
+    { id:"m_lying_triceps_ext",  name:"ライイングエクステンション",   body:"腕",  compound:false },
+    { id:"m_overhead_ext",       name:"オーバーヘッドエクステンション",body:"腕", compound:false },
+    { id:"m_triceps_kickback",   name:"キックバック",                 body:"腕",  compound:false },
+    { id:"m_close_grip_bench",   name:"ナローベンチプレス",           body:"腕",  compound:true  },
+    // 体幹
+    { id:"m_crunch",             name:"クランチ",                     body:"体幹",compound:false },
+    { id:"m_leg_raise",          name:"レッグレイズ",                 body:"体幹",compound:false },
+    { id:"m_hanging_leg_raise",  name:"ハンギングレッグレイズ",       body:"体幹",compound:false },
+    { id:"m_cable_crunch",       name:"ケーブルクランチ",             body:"体幹",compound:false },
+    { id:"m_ab_wheel",           name:"アブローラー",                 body:"体幹",compound:false },
+    { id:"m_russian_twist",      name:"ロシアンツイスト",             body:"体幹",compound:false },
+  ];
+  function getExercise(id){ return data.exercises.find(e=>e.id===id) || MASTER_EXERCISES.find(e=>e.id===id) || null; }
+  function allExercises(){ return [...MASTER_EXERCISES, ...data.exercises]; }
+  function pickableExercises(){ return allExercises().filter(e=>!e.retired); } // 選択用（retired除外）
+  function isMaster(id){ return MASTER_EXERCISES.some(e=>e.id===id); }
+
   // ---- coach access code (hashed — not stored in plaintext) ----
   const CODE_HASH = "6336fe5db32a323ad1d5e65958aff1eacf2053e39152a510e192528135178b18";
   async function sha256hex(str){
@@ -868,11 +954,14 @@
   function buildMenuPayload(splitIds){
     const splits = data.splits.filter(s=>splitIds.includes(s.id));
     const exIds  = [...new Set(splits.flatMap(s=>s.exIds))];
-    const exList = exIds.map(id=>data.exercises.find(e=>e.id===id)).filter(Boolean);
+    const exList = exIds.map(id=>getExercise(id)).filter(Boolean);
     const idx = {}; exList.forEach((e,i)=> idx[e.id]=i);
     return {
       v: 1,
-      e: exList.map(e=> e.step!=null ? {n:e.name, b:e.body, st:e.step} : {n:e.name, b:e.body}),
+      e: exList.map(e=> isMaster(e.id)
+        ? { mid: e.id }
+        : Object.assign({ n:e.name, b:e.body, cmp: e.compound!==false, uni: !!e.unilateral }, e.step!=null ? {st:e.step} : null)
+      ),
       s: splits.map(s=> ({ n:s.name, e:s.exIds.filter(id=>idx[id]!=null).map(id=>idx[id]) }))
     };
   }
@@ -968,19 +1057,13 @@
   function idFromUserKey(k){ const m=k.match(/^strengthlog:user:(.+):v1$/); return m?m[1]:null; }
 
   function seedData(){
-    const ex=[
-      {id:uid(),name:"ベンチプレス",body:"胸"},
-      {id:uid(),name:"ショルダープレス",body:"肩"},
-      {id:uid(),name:"ラットプルダウン",body:"背中"},
-      {id:uid(),name:"デッドリフト",body:"背中"},
-      {id:uid(),name:"スクワット",body:"脚"},
-    ];
+    // 新規プロフィールの初期分割は共通カタログのIDを直接参照する（独自種目は作らない）
     return {
-      exercises:ex,
+      exercises:[],
       splits:[
-        {id:uid(),name:"プッシュ",exIds:[ex[0].id,ex[1].id]},
-        {id:uid(),name:"プル",exIds:[ex[2].id,ex[3].id]},
-        {id:uid(),name:"脚",exIds:[ex[4].id]},
+        {id:uid(),name:"プッシュ",exIds:["m_bench_press","m_ohp"]},
+        {id:uid(),name:"プル",exIds:["m_lat_pulldown","m_deadlift"]},
+        {id:uid(),name:"脚",exIds:["m_squat"]},
       ],
       sets:[]
     };
@@ -1283,8 +1366,8 @@
   }
 
   // ---- computed ----
-  function exName(id){ const e=data.exercises.find(x=>x.id===id); return e?e.name:"削除された種目"; }
-  function exBody(id){ const e=data.exercises.find(x=>x.id===id); return e?e.body:null; }
+  function exName(id){ const e=getExercise(id); return e?e.name:"削除された種目"; }
+  function exBody(id){ const e=getExercise(id); return e?e.body:null; }
   function best(exId){
     const s=data.sets.filter(x=>x.exId===exId);
     if(!s.length) return null;
@@ -1353,131 +1436,70 @@
     const step=g/100;
     return (step>=0.5 && step<=10) ? step : null;
   }
-  // 重量アップ/回数+1に切り替わる回数のしきい値。目的（オンボーディングで選択）ごとに変える。
-  const PURPOSE_THRESHOLDS={
-    strength:   {up:5,  reps:3},
-    hypertrophy:{up:10, reps:7},
-    cut:        {up:15, reps:10}
+  // ---- 目安ロジック（全レベル統一・段階式＋回数レンジ） ----
+  // 目的×種目タイプ（多関節/単関節）で決まる回数レンジ。片側種目は両側分まとめて記録する前提で2倍。
+  const REP_RANGES = {
+    hypertrophy: { compound:[8,10],  iso:[10,12] },
+    strength:    { compound:[3,5],   iso:[6,8]   },
+    cut:         { compound:[10,12], iso:[13,15] },
   };
-  function repsThresholds(){
-    const purpose = data && data.profile && data.profile.purpose;
-    return PURPOSE_THRESHOLDS[purpose] || PURPOSE_THRESHOLDS.hypertrophy;
+  function repRange(exId){
+    const ex = getExercise(exId);
+    const isCompound = ex ? ex.compound !== false : true;   // compound未定義は多関節扱い
+    const p = (data.profile && data.profile.purpose) || "hypertrophy";
+    const r = REP_RANGES[p] || REP_RANGES.hypertrophy;
+    let [low, high] = isCompound ? r.compound : r.iso;
+    if(ex && ex.unilateral){ low *= 2; high *= 2; }         // 片側種目は2倍
+    return [low, high];
   }
-  // target for one set, based on the matching set from last time
-  function targetFor(p, step){
-    if(step==null) step=2.5;
-    const th=repsThresholds();
-    if(p.reps>=th.up)   return {weight:roundW(p.weight+step), reps:p.reps, why:"up"};
-    if(p.reps>=th.reps) return {weight:p.weight, reps:p.reps+1, why:"reps"};
-    return {weight:p.weight, reps:Math.max(p.reps,1), why:"same"};
-  }
-  // ---- 上級者向け: トレンド学習式（直近の伸び方から次の重量を予測） ----
-  // recent = recentSessions(exId, 3)（新しい順）
-  function advTarget(recent, i, step, th){
-    const at = ses => ses && ses.sets[i];
-    const last = at(recent[0]); if(!last) return null;
-    const w0=last.weight, r0=last.reps;
-    const s1=at(recent[1]), s2=at(recent[2]);
-    const w1 = s1 ? s1.weight : null, w2 = s2 ? s2.weight : null;
-
-    // 直近3セッションが一定幅で上がっていればトレンドありと判定
-    let delta = 0;
-    if(w1!=null && w2!=null && w0>w1 && w1>w2 &&
-       Math.abs((w0-w1)-(w1-w2)) <= step){
-      delta = Math.round((w0-w1)/step)*step; // stepの倍数へ
-    }
-
-    if(delta>0){
-      const weight = snapStep(w0 + delta, step);
-      const steps  = Math.max(1, Math.round(delta/step));
-      const reps   = Math.max(th.reps, r0 - (steps>=2 ? 2 : 1)); // ジャンプ幅→1〜2、下限=floor
-      return {weight, reps, why:"up"};
-    }
-    // トレンドなし → 既存 targetFor にフォールバック（回数の積み直し／同stepの上げ幅）
-    const t = targetFor(last, step);
-    // 既存ロジックで1段階上げた場合は回数を1つ落とす（ジャンプ＝なだらかな回数で吸収）
-    if(t.why==="up") t.reps = Math.max(th.reps, t.reps - 1);
-    return t;
-  }
-
-  // ---- 中級者・初心者向け: 複合プログレッション式（規定回数×全セットで+1段階） ----
-  function doubleTargets(prev, step, th, nSess){
-    const goal = th.up;
-    const sets = prev.sets;
-    const n = sets.length || 3;
-    const W = sets.map(s=>s.weight), R = sets.map(s=>s.reps);
-    const Wlow = Math.min(...W), Whigh = Math.max(...W);
-    const hit  = i => R[i] >= goal;
-    const lead = (nSess < 3) ? 2 : 1; // 始めたて（過去セッション数<3）は2セットずつ繰り上げ
-    const mk   = (w, why="same") => ({weight: snapStep(w, step), reps: goal, why});
-    const stepUp = base => Array.from({length:n}, (_,i)=> i<lead ? mk(base+step,"up") : mk(base));
+  // 前回セッションを基準に、今回の各セットの目標（重量は段階式、回数は[low,high]レンジ）を作る
+  function planTargets(prev, step, low, high, nSess){
+    const W = prev.sets.map(s=>s.weight);
+    const R = prev.sets.map(s=>s.reps);
+    const n = W.length || 3;
+    const Wlow  = Math.min(...W);
+    const Whigh = Math.max(...W);
+    const lead  = (nSess < 3) ? 2 : 1;                 // 始めたては2セットずつ繰り上げ
+    const mk    = (w, why="same") => ({ weight: snapStep(w, step), reps: high, low, high, why });
+    const stepUp= base => Array.from({length:n}, (_,i)=> i<lead ? mk(base+step,"up") : mk(base));
+    const hitHigh  = i => R[i] >= high;
+    const belowLow = i => R[i] <  low;
 
     if(Whigh > Wlow){
       // 繰り上げ進行中（先頭=Whigh, 残り=Wlow）
-      const leadCount  = W.filter(w=>w===Whigh).length;
-      const leadAllHit = W.map((w,i)=>({w,i})).filter(o=>o.w===Whigh).every(o=>hit(o.i));
-      if(leadAllHit){
-        const newLead = Math.min(n, leadCount + lead);
-        if(newLead >= n) return stepUp(Whigh); // 全セットがWhighに到達 → 次の+1段階へ
-        return Array.from({length:n}, (_,i)=> i<newLead ? mk(Whigh,"up") : mk(Wlow));
+      const leadIdx = W.map((w,i)=>({w,i})).filter(o=>o.w===Whigh).map(o=>o.i);
+      if(leadIdx.some(belowLow))  return Array.from({length:n}, (_,i)=> mk(Wlow, "down"));       // 新重量が下限割れ → 旧重量へ
+      if(leadIdx.every(hitHigh)){
+        const newLead = Math.min(n, leadIdx.length + lead);
+        if(newLead >= n) return stepUp(Whigh);                                                    // 全セット新重量で上限 → 次の+1段階
+        return Array.from({length:n}, (_,i)=> i<newLead ? mk(Whigh,"up") : mk(Wlow));             // もう1(2)セット繰り上げ
       }
-      return Array.from({length:n}, (_,i)=> mk(W[i])); // 先頭未達 → 現状維持
+      return Array.from({length:n}, (_,i)=> mk(W[i]));                                             // レンジ内 → 現状維持
     } else {
-      // 単一重量W
-      const allHit = R.slice(0,n).every((_,i)=>hit(i)) && sets.length >= Math.min(n,3);
-      if(allHit) return stepUp(Wlow); // 全セット規定回数 → +1段階
-      return Array.from({length:n}, (_,i)=> mk(Wlow)); // まだ → 現状維持、規定回数狙い
+      const W0 = Wlow;
+      if(R.slice(0,n).some((_,i)=>belowLow(i)))  return Array.from({length:n}, (_,i)=> mk(roundW(W0-step), "down")); // 下限割れ → 1段階下げ
+      if(R.slice(0,n).every((_,i)=>hitHigh(i)) && prev.sets.length>=Math.min(n,3)) return stepUp(W0);        // 全セット上限 → +1段階
+      return Array.from({length:n}, (_,i)=> mk(W0));                                                          // レンジ内 → 維持
     }
   }
 
   // full plan for today: one target per set of the previous session
   function planFor(exId){
-    const ex=data.exercises.find(e=>e.id===exId);
+    const ex=getExercise(exId);
     const step=(ex && typeof ex.step==="number") ? ex.step : (inferStep(exId) ?? 2.5);
-    const th=repsThresholds();
-    const mode=(data.profile && data.profile.experience==="advanced") ? "adv" : "dbl";
+    const [low, high] = repRange(exId);
     const list=pastSessionsList(exId);
     const basisIdx=targetBasisIndex(list);
     const prev=basisIdx>=0 ? list[basisIdx] : null;
-    const priorToPrev=(basisIdx>=0 && basisIdx+1<list.length) ? list[basisIdx+1] : null;
     const done=todaySetsOf(exId);
     if(!prev || !prev.sets.length){
       if(!done.length) return {kind:"first"};
       const top=done.reduce((a,b)=>(b.weight>a.weight||(b.weight===a.weight&&b.reps>a.reps))?b:a);
-      const t=targetFor(top, step);
+      const t={weight:top.weight, reps:high, low, high, why:"same"};
       return {kind:"noprev", next:t, doneCount:done.length, est:Math.round(e1RM(top.weight,top.reps))};
     }
 
-    let targets;
-    if(mode==="dbl"){
-      // 中級者・初心者: 複合プログレッション式。catchup分岐には入らず、こちらで完結させる。
-      targets=doubleTargets(prev, step, th, list.length);
-    } else {
-      // 上級者: トレンド学習式。catchup（前回の追加セット吸収）の骨組みは流用し、
-      // 各セットの目標を作る部分だけ advTarget に差し替える。
-      const recent=recentSessions(exId, 3);
-      const CATCHUP_REPS_CAP=30;
-      if(priorToPrev && priorToPrev.sets.length>0 && prev.sets.length===priorToPrev.sets.length+1){
-        // 前回はボリュームが足りず、いつもよりちょうど1セット多く「追加セット」をしていた。
-        // 今回はいつも通りのセット数のまま、最終セットの回数だけ増やして前回の総ボリュームを超えられるようにする。
-        const usualCount=priorToPrev.sets.length;
-        const base=priorToPrev.sets.slice(0,usualCount-1).map(s=>targetFor(s, step));
-        const lastSrc=priorToPrev.sets[usualCount-1];
-        const soFarVol=base.reduce((a,t)=>a+t.weight*t.reps,0);
-        const naturalLast=targetFor(lastSrc, step);
-        // 必ず前回のボリュームを「超える」回数（ちょうど届く回数ではなく+1する）
-        const neededReps=lastSrc.weight>0 ? Math.floor((prev.vol-soFarVol)/lastSrc.weight)+1 : naturalLast.reps;
-        const reps=Math.max(naturalLast.reps, neededReps, 1);
-        if(reps<=CATCHUP_REPS_CAP){
-          targets=base; targets.push({weight:lastSrc.weight, reps, why:"catchup"});
-        } else {
-          // 回数が現実的でない（=単なるセット数増ではなく別物の可能性）ときは通常通りに戻す
-          targets=prev.sets.map((s,i)=>advTarget(recent,i,step,th) || targetFor(s, step));
-        }
-      } else {
-        targets=prev.sets.map((s,i)=>advTarget(recent,i,step,th) || targetFor(s, step));
-      }
-    }
+    const targets=planTargets(prev, step, low, high, list.length);
 
     const total=targets.length;
     const doneCount=done.length;
@@ -1506,7 +1528,7 @@
     // 入力欄の初期値を、次のセットの目安（=前回の記録がベース）に合わせる
     if(s.next){
       document.getElementById("inWeight").value=s.next.weight;
-      document.getElementById("inReps").value=s.next.reps;
+      document.getElementById("inReps").value=s.next.high ?? s.next.reps;
     }
 
     let deltaHtml;
@@ -1578,7 +1600,7 @@
               if(!t){ tds += `<td class="w empty">·</td><td class="r empty">·</td>`; continue; }
               const isNext = (i === s.doneCount);
               const c = isNext ? " next" : (i < s.doneCount ? " past" : "");
-              tds += `<td class="w${c}">${fmtW(t.weight)}</td><td class="r${c}">${t.reps}</td>`;
+              tds += `<td class="w${c}">${fmtW(t.weight)}</td><td class="r${c}">${t.high ?? t.reps}</td>`;
             }
             rows += `<tr class="row-plan">${tds}</tr>`;
           }
@@ -1594,14 +1616,15 @@
         })()
       : "";
 
-    const WHY={up:"前回より重く", reps:"回数を1つ伸ばす", same:"同じ重量で確実に", catchup:"前回の追加セット分を回数で挽回"};
+    const WHY={up:"1段階アップ", same:"同重量で上限狙い", down:"下限割れのため1段階ダウン"};
+    const repsLabel = t => (t.low!=null && t.high!=null) ? `${t.low}〜${t.high}` : t.reps;
     let guideHtml;
     if(s.kind==="ok"){
       const t=s.next;
       const setNo=s.doneCount+1;
       guideHtml=`<div class="ins-guide">
         <div class="g-label">次のセットの目安 <span class="g-prog">${setNo} / ${s.total} セット目</span></div>
-        <div class="g-main num">${fmtW(t.weight)}<span>kg</span> × ${t.reps}</div>
+        <div class="g-main num">${fmtW(t.weight)}<span>kg</span> × ${repsLabel(t)}</div>
         <div class="g-reason">${WHY[t.why]} ・ 前回の${setNo}セット目が基準 ・ 推定1RM ${s.est}kg</div>
       </div>`;
     } else if(s.kind==="done"){
@@ -1615,7 +1638,7 @@
       const t=s.next;
       guideHtml=`<div class="ins-guide">
         <div class="g-label">次のセットの目安</div>
-        <div class="g-main num">${fmtW(t.weight)}<span>kg</span> × ${t.reps}</div>
+        <div class="g-main num">${fmtW(t.weight)}<span>kg</span> × ${repsLabel(t)}</div>
         <div class="g-reason">今日のセットを基準にした目安 ・ 推定1RM ${s.est}kg</div>
       </div>`;
     } else {
@@ -1635,23 +1658,22 @@
     const r = parseInt(document.getElementById("inReps").value, 10);
     if(!exId || isNaN(w) || isNaN(r) || w < 0 || r <= 0){ box.innerHTML=""; return; }
 
-    const vol = w * r;
-    const idx = todaySetsOf(exId).length;            // これから入れるセットの位置(0-based)
-    const prev = prevSession(exId);                  // 前回＝直近の過去セッション
-    const pv = prev && prev.sets[idx] ? prev.sets[idx] : null;
+    const idx = todaySetsOf(exId).length;
+    const todayCum = todaySetsOf(exId).reduce((a,s)=>a + s.weight*s.reps, 0) + w*r;
+    const prev = prevSession(exId);
+    const prevCum = prev ? prev.sets.slice(0, idx+1).reduce((a,s)=>a + s.weight*s.reps, 0) : null;
 
     let cmp;
-    if(pv){
-      const pvol = pv.weight * pv.reps;
-      const diff = vol - pvol;
+    if(prev && prev.sets.length){
+      const diff = todayCum - prevCum;
       const sign = diff >= 0 ? "up" : "down";
       const arrow = diff >= 0 ? "▲" : "▼";
       cmp = `<span class="vp-cmp ${sign}">${arrow}${fmtNum(Math.abs(diff))}
-               <span class="vp-sub">前回${idx+1}セット目 ${fmtNum(pvol)}</span></span>`;
+               <span class="vp-sub">前回${idx+1}セット目まで ${fmtNum(prevCum)}</span></span>`;
     } else {
-      cmp = `<span class="vp-cmp muted">前回の同セットなし</span>`;
+      cmp = `<span class="vp-cmp muted">前回なし</span>`;
     }
-    box.innerHTML = `<span class="vp-vol">このセット <b class="num">${fmtNum(vol)}</b> kg</span>${cmp}`;
+    box.innerHTML = `<span class="vp-vol">${idx+1}セット目まで <b class="num">${fmtNum(todayCum)}</b> kg</span>${cmp}`;
   }
 
   // ---- SVG ----
@@ -1844,19 +1866,18 @@
   function renderSelects(){
     const sel=document.getElementById("exSelect");
     const prev=sel.value;
-    // filter by active split; if that split is empty, fall back to every exercise
-    let list=data.exercises;
+    // filter by active split; if that split is empty, fall back to every pickable exercise
+    let list=pickableExercises();
     if(activeSplit!=="__all"){
       const sp=data.splits.find(s=>s.id===activeSplit);
-      const ids=sp?new Set(sp.exIds):new Set();
       // keep the order defined inside the split
-      const filtered=sp?sp.exIds.map(id=>data.exercises.find(e=>e.id===id)).filter(Boolean):[];
+      const filtered=sp?sp.exIds.map(id=>getExercise(id)).filter(e=>e && !e.retired):[];
       if(filtered.length) list=filtered;
     } else {
       // "すべて" でも、どの分割にも属さない種目は選択肢から隠す
       const inAnySplit=new Set();
       data.splits.forEach(s=>s.exIds.forEach(id=>inAnySplit.add(id)));
-      if(inAnySplit.size) list=data.exercises.filter(e=>inAnySplit.has(e.id));
+      if(inAnySplit.size) list=pickableExercises().filter(e=>inAnySplit.has(e.id));
     }
     list=list.filter(e=>!e.archived); // 一覧から隠した種目は記録の選択肢にも出さない
     const byBody={};
@@ -1873,11 +1894,12 @@
     sel.innerHTML=html || `<option value="">${emptyMsg}</option>`;
     if(prev && list.some(e=>e.id===prev)) sel.value=prev;
 
-    // history filter
+    // history filter — 記録があるものだけ（カタログ全件を並べると埋もれるため）
     const hf=document.getElementById("histFilter");
     const hprev=hf.value;
+    const usedIds=new Set(data.sets.map(s=>s.exId));
     let hhtml=`<option value="__all">すべての種目</option>`;
-    data.exercises.forEach(e=>{ hhtml+=`<option value="${e.id}">${escapeHtml(e.name)}</option>`; });
+    pickableExercises().filter(e=>usedIds.has(e.id)).forEach(e=>{ hhtml+=`<option value="${e.id}">${escapeHtml(e.name)}</option>`; });
     hf.innerHTML=hhtml;
     if(hprev) hf.value=hprev;
   }
@@ -2028,11 +2050,33 @@
 
   // ---- add a forgotten set to a past session ----
   let addSetKey = null;
+  // その日の分割優先 → 他の分割 → その他（どの分割にも無いカタログ種目含む）の順にグループ表示
+  function buildAddSetOptions(sessionKeyVal){
+    const sessExIds = new Set(
+      data.sets.filter(s => sessionKey(s) === sessionKeyVal).map(s => s.exId)
+    );
+    const splitsRanked = data.splits
+      .map(sp => ({ sp, match: sp.exIds.filter(id => sessExIds.has(id)).length }))
+      .sort((a, b) => b.match - a.match);
+
+    const inAnySplit = new Set(data.splits.flatMap(s => s.exIds));
+    const seen = new Set();
+    const optFor = e => `<option value="${e.id}">${escapeHtml(e.name)}</option>`;
+    let html = "";
+    splitsRanked.forEach(({ sp }) => {
+      const exs = sp.exIds.map(id => getExercise(id)).filter(e => e && !seen.has(e.id) && !e.retired);
+      if(!exs.length) return;
+      exs.forEach(e => seen.add(e.id));
+      html += `<optgroup label="${escapeHtml(sp.name)}">${exs.map(optFor).join("")}</optgroup>`;
+    });
+    const orphans = pickableExercises().filter(e => !inAnySplit.has(e.id) && !seen.has(e.id));
+    if(orphans.length) html += `<optgroup label="その他">${orphans.map(optFor).join("")}</optgroup>`;
+    return html;
+  }
   function openAddSetModal(k){
     addSetKey = k;
     document.getElementById("addSetEx").innerHTML =
-      data.exercises.filter(e=>!e.archived).map(e=>`<option value="${e.id}">${escapeHtml(e.name)}</option>`).join("")
-      || `<option value="">種目がありません</option>`;
+      buildAddSetOptions(k) || `<option value="">種目がありません</option>`;
     document.getElementById("addSetWhen").textContent = fmtDateFull(k).main + " のセッションに追加";
     document.getElementById("addSetW").value = "";
     document.getElementById("addSetR").value = "";
@@ -2086,7 +2130,9 @@
         </div>`;
         removeBtn = `<button class="icon-btn sm" data-unlink="${e.id}" data-sp="${splitId}" aria-label="この分割から外す">${MINUS}</button>`;
       }
-      editBtn = `<button class="icon-btn sm" style="color:var(--muted)" data-editex="${e.id}" aria-label="名前を変更">${EDIT}</button>`;
+      if(!isMaster(e.id)){
+        editBtn = `<button class="icon-btn sm" style="color:var(--muted)" data-editex="${e.id}" aria-label="名前を変更">${EDIT}</button>`;
+      }
     }
     return `<div class="sp-ex">
       ${order}
@@ -2113,7 +2159,7 @@
       }
       data.splits.forEach(s=>{
         const editing = editModeSplit===s.id;
-        const exs=s.exIds.map(id=>data.exercises.find(e=>e.id===id)).filter(Boolean);
+        const exs=s.exIds.map(id=>getExercise(id)).filter(Boolean);
         const rows = exs.length
           ? exs.map((e,i)=>exRowHtml(e,s.id,i,exs.length,editing)).join("")
           : `<div class="split-empty-note">${editing?"下の＋から種目を追加してください。":"まだ種目がありません。編集から追加できます。"}</div>`;
@@ -2175,10 +2221,13 @@
   // ---- import a shared menu (additive, same-name merge keeps history) ----
   async function importMenu(p){
     const realExId = p.e.map(pe=>{
+      if(pe.mid) return isMaster(pe.mid) ? pe.mid : null; // カタログのIDをそのまま使う（新規作成しない）
       const found = data.exercises.find(e=> e.name === pe.n);
       if(found) return found.id;
       const ne = { id: uid(), name: pe.n, body: pe.b || "その他" };
       if(pe.st != null) ne.step = pe.st;
+      if(pe.cmp != null) ne.compound = pe.cmp;
+      if(pe.uni != null) ne.unilateral = pe.uni;
       data.exercises.push(ne);
       return ne.id;
     });
@@ -2253,7 +2302,7 @@
     const box=document.getElementById("addExPick");
     const sp=data.splits.find(s=>s.id===addExSplitId);
     const inSplit=new Set(sp?sp.exIds:[]);
-    const avail=data.exercises.filter(e=>!inSplit.has(e.id) && !e.archived);
+    const avail=pickableExercises().filter(e=>!inSplit.has(e.id) && !e.archived);
     if(!avail.length){
       box.innerHTML=`<div class="pick-empty">追加できる既存の種目はありません。<br>上の欄から新しく作ってください。</div>`;
       return;
@@ -2286,7 +2335,7 @@
     const inp=document.getElementById("newExName");
     const name=inp.value.trim();
     if(!name){ toast("種目名を入力してください"); return; }
-    if(data.exercises.some(e=>e.name===name)){ toast("同じ名前の種目があります"); return; }
+    if(allExercises().some(e=>e.name===name)){ toast("同じ名前の種目があります"); return; }
     const e={id:uid(),name,body:newExBody};
     data.exercises.push(e);
     const sp=data.splits.find(s=>s.id===addExSplitId);
@@ -2369,6 +2418,8 @@
     stepEl.placeholder=auto!=null?`自動: ${auto}kg`:"自動: 2.5kg";
     selectedBody=ex?ex.body:"胸";
     renderBodyChips();
+    selectChip("compoundChips", (ex && ex.compound===false) ? "単関節" : "多関節");
+    selectChip("unilateralChips", (ex && ex.unilateral) ? "片側" : "両側");
     document.getElementById("exDelete").style.display = id ? "block" : "none";
     const archiveBtn=document.getElementById("exArchive");
     archiveBtn.style.display = id ? "block" : "none";
@@ -2394,17 +2445,20 @@
     document.getElementById("exSave").disabled = !document.getElementById("exName").value.trim();
   }
   async function saveEx(){
+    if(editingExId && isMaster(editingExId)) return; // カタログ種目は編集不可（UI上は出さない前提の二重防御）
     const name=document.getElementById("exName").value.trim();
     if(!name) return;
     const stepStr=document.getElementById("exStep").value.trim();
     let step=null;
     if(stepStr!==""){ const v=parseFloat(stepStr); if(!isNaN(v) && v>=0) step=v; }
+    const compound   = (pickChip("compoundChips")   === "多関節");
+    const unilateral = (pickChip("unilateralChips") === "片側");
     if(editingExId){
       const e=data.exercises.find(x=>x.id===editingExId);
-      if(e){ e.name=name; e.body=selectedBody; if(step==null) delete e.step; else e.step=step; }
+      if(e){ e.name=name; e.body=selectedBody; e.compound=compound; e.unilateral=unilateral; if(step==null) delete e.step; else e.step=step; }
       toast("種目を更新しました");
     }else{
-      const newEx={id:uid(),name,body:selectedBody};
+      const newEx={id:uid(),name,body:selectedBody,compound,unilateral};
       if(step!=null) newEx.step=step;
       data.exercises.push(newEx);
       toast("種目を追加しました");
@@ -2412,6 +2466,7 @@
     await save(); renderAll(); closeExModal();
   }
   async function delEx(id){
+    if(isMaster(id)) return; // カタログ種目は削除不可（UI上は出さない前提の二重防御）
     const cnt=data.sets.filter(s=>s.exId===id).length;
     const msg = cnt? `「${exName(id)}」を削除しますか？\n記録済みの${cnt}セットも一緒に削除されます。` : `「${exName(id)}」を削除しますか？`;
     if(!confirm(msg)) return;
@@ -2469,6 +2524,7 @@
       const c=e.target.closest("[data-body]"); if(!c) return;
       selectedBody=c.dataset.body; renderBodyChips();
     });
+    ["compoundChips","unilateralChips"].forEach(wireSingleSelectChips);
 
     document.getElementById("openAddSplit").addEventListener("click",()=>openSplitModal(null));
     document.getElementById("splitCancel").addEventListener("click",closeSplitModal);
