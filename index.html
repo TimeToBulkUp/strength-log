@@ -689,18 +689,43 @@
   </div>
 </div>
 
-<!-- Coach: share a menu (splits + exercises) as a link/QR -->
+<!-- Coach: manage named share sets (each with its own splits/exercises, independent of data.splits) -->
 <div class="modal-bg" id="shareMenuModal">
   <div class="modal">
     <h3>メニューを共有</h3>
-    <div class="field"><label>含める分割</label><div class="chip-row" id="shareSplits"></div></div>
-    <div class="field"><label>リンク</label>
-      <input type="text" id="shareUrl" class="num" readonly style="font-size:12px"></div>
-    <div id="shareQr" style="display:flex;justify-content:center;padding:6px 0"></div>
-    <div class="user-hint">選手はこのリンクを開く（またはQRを読む）と取り込めます。</div>
+    <div id="shareSetList"></div>
+    <button class="sp-add" id="shareSetAdd">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      新しい共有を追加
+    </button>
+    <div class="modal-actions"><button class="btn-ghost" id="shareClose">閉じる</button></div>
+  </div>
+</div>
+
+<!-- Coach: edit one share set's own splits/exercises -->
+<div class="modal-bg" id="shareEditModal">
+  <div class="modal">
+    <div class="field">
+      <label for="ssName">共有の名前</label>
+      <input type="text" id="ssName" autocomplete="off">
+    </div>
+    <div id="ssSplitList"></div>
+    <button class="sp-add" id="ssSplitAdd">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      分割を追加
+    </button>
+    <div class="modal-actions"><button class="btn-solid" id="ssDone">完了</button></div>
+  </div>
+</div>
+
+<!-- Coach: pick catalog/custom exercises into one share-set split -->
+<div class="modal-bg" id="ssExPickModal">
+  <div class="modal">
+    <h3>種目を追加</h3>
+    <div class="field"><select id="ssExPick" multiple size="12" style="width:100%"></select></div>
     <div class="modal-actions">
-      <button class="btn-ghost" id="shareClose">閉じる</button>
-      <button class="btn-solid" id="shareCopy">リンクをコピー</button>
+      <button class="btn-ghost" id="ssExPickCancel">キャンセル</button>
+      <button class="btn-solid" id="ssExPickAdd">追加</button>
     </div>
   </div>
 </div>
@@ -950,23 +975,24 @@
     return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,"0")).join("");
   }
 
-  // ---- shared menu (splits + exercises) encode/decode for coach -> athlete links ----
-  function buildMenuPayload(splitIds){
-    const splits = data.splits.filter(s=>splitIds.includes(s.id));
-    const exIds  = [...new Set(splits.flatMap(s=>s.exIds))];
+  // ---- shared menu (独立した共有セット: 自分のdata.splitsとは別の配布専用の分割・種目) ----
+  // 共有セットの中の種目idからexList/idxを組む共通処理
+  function buildShareSetPayload(ss){
+    const exIds = [...new Set(ss.splits.flatMap(s=>s.exIds))];
     const exList = exIds.map(id=>getExercise(id)).filter(Boolean);
     const idx = {}; exList.forEach((e,i)=> idx[e.id]=i);
     return {
       v: 1,
+      name: ss.name,                                    // 選手側の取り込み確認にも表示する共有名
       e: exList.map(e=> isMaster(e.id)
         ? { mid: e.id }
         : Object.assign({ n:e.name, b:e.body, cmp: e.compound!==false, uni: !!e.unilateral }, e.step!=null ? {st:e.step} : null)
       ),
-      s: splits.map(s=> ({ n:s.name, e:s.exIds.filter(id=>idx[id]!=null).map(id=>idx[id]) }))
+      s: ss.splits.map(sp=> ({ n:sp.name, e:sp.exIds.filter(id=>idx[id]!=null).map(id=>idx[id]) }))
     };
   }
-  function encodeMenu(splitIds){
-    const code = LZString.compressToEncodedURIComponent(JSON.stringify(buildMenuPayload(splitIds)));
+  function encodeShareSet(ss){
+    const code = LZString.compressToEncodedURIComponent(JSON.stringify(buildShareSetPayload(ss)));
     return location.origin + location.pathname + "#menu=" + code;
   }
   function decodeMenu(code){
@@ -978,7 +1004,7 @@
   }
 
   // ---- state ----
-  let data = { exercises:[], sets:[], splits:[] };
+  let data = { exercises:[], sets:[], splits:[], shareSets:[] };
   let meta = { users:[], currentUserId:null };
   let editingExId = null;
   let selectedBody = "胸";
@@ -1072,6 +1098,7 @@
     if(!d || !Array.isArray(d.exercises)) d = seedData();
     if(!Array.isArray(d.sets)) d.sets = [];
     if(!Array.isArray(d.splits)) d.splits = [];
+    if(!Array.isArray(d.shareSets)) d.shareSets = [];
     return d;
   }
 
@@ -2192,30 +2219,135 @@
     renderOrphans();
   }
 
-  // ---- coach: share a menu as a link/QR ----
-  let shareSel = new Set();
-  function openShareModal(){
-    shareSel = new Set(data.splits.map(s=>s.id));  // 既定=全分割
-    document.getElementById("shareSplits").innerHTML =
-      data.splits.map(s=>`<button class="chip sel" type="button" data-sharesplit="${s.id}">${escapeHtml(s.name)}</button>`).join("");
-    updateShare();
-    document.getElementById("shareMenuModal").classList.add("open");
+  // ---- coach: independent "share sets" — each has its own splits/exercises, separate from data.splits ----
+  const CIRCLED = ["①","②","③","④","⑤","⑥","⑦","⑧","⑨","⑩"];
+  function nextShareName(){
+    for(let i=0;i<30;i++){ const nm = "共有"+(CIRCLED[i]||(i+1)); if(!data.shareSets.some(s=>s.name===nm)) return nm; }
+    return "共有"+uid().slice(0,4);
   }
+  function openShareModal(){ renderShareSets(); document.getElementById("shareMenuModal").classList.add("open"); }
   function closeShareModal(){ document.getElementById("shareMenuModal").classList.remove("open"); }
-  function updateShare(){
-    const ids = [...shareSel];
-    const url = ids.length ? encodeMenu(ids) : "";
-    document.getElementById("shareUrl").value = url;
-    const qr = document.getElementById("shareQr"); qr.innerHTML = "";
-    if(url){
-      try{
-        const q = qrcode(0, "L");   // type自動・誤り訂正L（容量優先）
-        q.addData(url); q.make();
-        qr.innerHTML = q.createImgTag(4, 8);
-      }catch(_){
-        qr.innerHTML = `<span class="user-hint">メニューが大きすぎてQRにできません。リンクを使ってください。</span>`;
-      }
+  function renderShareSets(){
+    const wrap = document.getElementById("shareSetList");
+    if(!data.shareSets.length){
+      wrap.innerHTML = `<div class="split-empty-note">まだ共有がありません。「新しい共有を追加」から作成してください。</div>`;
+      return;
     }
+    wrap.innerHTML = data.shareSets.map(ss=>{
+      const nSplit = ss.splits.length;
+      const nEx = new Set(ss.splits.flatMap(s=>s.exIds)).size;
+      const url = encodeShareSet(ss);
+      return `<div class="split-item">
+        <div class="split-item-head">
+          <input type="text" class="num" data-ss-name="${ss.id}" value="${escapeHtml(ss.name)}" style="flex:1;font-size:15px;font-weight:700">
+          <span class="sp-count">${nSplit}分割 ・ ${nEx}種目</span>
+          <button class="icon-btn sm" style="color:var(--muted)" data-ss-edit="${ss.id}" aria-label="編集">${EDIT}</button>
+          <button class="icon-btn sm" data-ss-del="${ss.id}" aria-label="削除">${TRASH}</button>
+        </div>
+        <input type="text" class="num" readonly style="font-size:12px;width:100%" value="${url}">
+        <div style="display:flex;justify-content:center;padding:6px 0" data-ss-qr="${ss.id}"></div>
+        <button class="sp-add" data-ss-copy="${ss.id}">リンクをコピー</button>
+      </div>`;
+    }).join("");
+    // QR描画（innerHTMLに埋められないので後から）
+    data.shareSets.forEach(ss=>{
+      const box = wrap.querySelector(`[data-ss-qr="${ss.id}"]`); if(!box) return;
+      const url = encodeShareSet(ss);
+      try{ const q = qrcode(0,"L"); q.addData(url); q.make(); box.innerHTML = q.createImgTag(4,8); }
+      catch(_){ box.innerHTML = `<span class="user-hint">メニューが大きすぎてQRにできません。リンクを使ってください。</span>`; }
+    });
+  }
+  async function addShareSet(){
+    const ss = { id: uid(), name: nextShareName(), splits: [] };
+    data.shareSets.push(ss);
+    await save();
+    openShareEditor(ss.id);      // 作ったらすぐ編集へ
+  }
+  async function delShareSet(id){
+    const ss = data.shareSets.find(s=>s.id===id);
+    if(ss && !confirm(`「${ss.name}」を削除しますか？`)) return;
+    data.shareSets = data.shareSets.filter(s=>s.id!==id);
+    await save(); renderShareSets();
+  }
+
+  // ---- share-set editor: this share set's own splits/exercises (data.splits is never touched here) ----
+  let editingShareId = null;
+  function curShare(){ return data.shareSets.find(s=>s.id===editingShareId); }
+  function openShareEditor(id){
+    editingShareId = id;
+    const ss = curShare(); if(!ss) return;
+    document.getElementById("ssName").value = ss.name;
+    renderShareEditor();
+    document.getElementById("shareEditModal").classList.add("open");
+  }
+  function closeShareEditor(){
+    document.getElementById("shareEditModal").classList.remove("open");
+    editingShareId = null;
+    renderShareSets();            // 一覧（リンク/QR）を更新
+  }
+  function renderShareEditor(){
+    const ss = curShare(); if(!ss) return;
+    const wrap = document.getElementById("ssSplitList");
+    wrap.innerHTML = ss.splits.map(sp=>{
+      const exRows = sp.exIds.map(exId=>{
+        const e = getExercise(exId);
+        return `<div class="sp-ex"><div class="sp-ex-body"><div class="sp-ex-name">${e?escapeHtml(e.name):"(削除された種目)"}</div></div>
+          <button class="icon-btn sm" data-ssex-del="${sp.id}:${exId}" aria-label="外す">${MINUS}</button></div>`;
+      }).join("") || `<div class="split-empty-note">種目がありません。下の＋から追加。</div>`;
+      return `<div class="split-item editing">
+        <div class="split-item-head">
+          <input type="text" class="num" data-sssplit-name="${sp.id}" value="${escapeHtml(sp.name)}" style="flex:1;font-size:14px">
+          <button class="icon-btn sm" data-sssplit-del="${sp.id}" aria-label="分割を削除">${TRASH}</button>
+        </div>
+        ${exRows}
+        <button class="sp-add" data-ssex-add="${sp.id}">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          種目を追加
+        </button>
+      </div>`;
+    }).join("");
+  }
+  async function ssAddSplit(){
+    const ss = curShare(); if(!ss) return;
+    ss.splits.push({ id: uid(), name: "分割"+(ss.splits.length+1), exIds: [] });
+    await save(); renderShareEditor();
+  }
+  async function ssDelSplit(spId){
+    const ss = curShare(); if(!ss) return;
+    ss.splits = ss.splits.filter(s=>s.id!==spId);
+    await save(); renderShareEditor();
+  }
+  async function ssRenameSplit(spId, name){
+    const ss = curShare(); const sp = ss && ss.splits.find(s=>s.id===spId);
+    if(sp){ sp.name = name; await save(); }
+  }
+  async function ssRemoveEx(spId, exId){
+    const ss = curShare(); const sp = ss && ss.splits.find(s=>s.id===spId);
+    if(sp){ sp.exIds = sp.exIds.filter(x=>x!==exId); await save(); renderShareEditor(); }
+  }
+  async function ssRenameSet(name){
+    const ss = curShare(); if(ss){ ss.name = name.trim()||ss.name; await save(); }
+  }
+
+  // ---- picker: add catalog/custom exercises into one share-set split ----
+  let ssPickSplitId = null;
+  function openSsExPick(spId){
+    ssPickSplitId = spId;
+    const byBody = {};
+    pickableExercises().forEach(e=>{ (byBody[e.body]=byBody[e.body]||[]).push(e); });
+    let html = "";
+    BODYPARTS.forEach(b=>{ if(byBody[b]) html += `<optgroup label="${b}">`+byBody[b].map(e=>`<option value="${e.id}">${escapeHtml(e.name)}</option>`).join("")+`</optgroup>`; });
+    document.getElementById("ssExPick").innerHTML = html;
+    document.getElementById("ssExPickModal").classList.add("open");
+  }
+  function closeSsExPick(){ document.getElementById("ssExPickModal").classList.remove("open"); ssPickSplitId=null; }
+  async function ssExPickAdd(){
+    const ss = curShare(); const sp = ss && ss.splits.find(s=>s.id===ssPickSplitId);
+    if(sp){
+      [...document.getElementById("ssExPick").selectedOptions].forEach(o=>{ if(!sp.exIds.includes(o.value)) sp.exIds.push(o.value); });
+      await save(); renderShareEditor();
+    }
+    closeSsExPick();
   }
 
   // ---- import a shared menu (additive, same-name merge keeps history) ----
@@ -2244,8 +2376,9 @@
   function openImportModal(p){
     importPayload = p;
     const exCount = p.e.length, spNames = p.s.map(s=>s.n).join("、");
+    const title = p.name ? `「${escapeHtml(p.name)}」を取り込みます。<br>` : "";
     document.getElementById("importSummary").innerHTML =
-      `分割 ${p.s.length}件（${escapeHtml(spNames)}）／種目 ${exCount}件`;
+      `${title}分割 ${p.s.length}件（${escapeHtml(spNames)}）／種目 ${exCount}件`;
     document.getElementById("importModal").classList.add("open");
   }
   function closeImportModal(){ document.getElementById("importModal").classList.remove("open"); importPayload=null; }
@@ -2553,20 +2686,41 @@
     document.getElementById("addSetCancel").addEventListener("click", closeAddSetModal);
     document.getElementById("addSetModal").addEventListener("click", e=>{ if(e.target.id==="addSetModal") closeAddSetModal(); });
 
-    document.getElementById("shareSplits").addEventListener("click", e=>{
-      const c = e.target.closest("[data-sharesplit]"); if(!c) return;
-      const id = c.dataset.sharesplit;
-      if(shareSel.has(id)) shareSel.delete(id); else shareSel.add(id);
-      c.classList.toggle("sel");
-      updateShare();
-    });
-    document.getElementById("shareCopy").addEventListener("click", async ()=>{
-      const url = document.getElementById("shareUrl").value; if(!url) return;
-      try{ await navigator.clipboard.writeText(url); toast("リンクをコピーしました"); }
-      catch(_){ const el=document.getElementById("shareUrl"); el.select(); document.execCommand("copy"); toast("リンクをコピーしました"); }
-    });
+    document.getElementById("shareSetAdd").addEventListener("click", addShareSet);
     document.getElementById("shareClose").addEventListener("click", closeShareModal);
+    document.getElementById("shareSetList").addEventListener("click", e=>{
+      const ed=e.target.closest("[data-ss-edit]");  if(ed){ openShareEditor(ed.dataset.ssEdit); return; }
+      const dl=e.target.closest("[data-ss-del]");   if(dl){ delShareSet(dl.dataset.ssDel); return; }
+      const cp=e.target.closest("[data-ss-copy]");  if(cp){
+        const ss=data.shareSets.find(s=>s.id===cp.dataset.ssCopy); if(!ss) return;
+        const url=encodeShareSet(ss);
+        (navigator.clipboard?.writeText(url) ?? Promise.reject()).then(()=>toast("リンクをコピーしました"),
+          ()=>{ const i=cp.closest(".split-item").querySelector("input"); i.select(); document.execCommand("copy"); toast("リンクをコピーしました"); });
+        return;
+      }
+    });
+    document.getElementById("shareSetList").addEventListener("input", e=>{
+      const nm=e.target.closest("[data-ss-name]");
+      if(nm){ const ss=data.shareSets.find(s=>s.id===nm.dataset.ssName); if(ss){ ss.name = nm.value.trim()||ss.name; save(); } }
+    });
     document.getElementById("shareMenuModal").addEventListener("click", e=>{ if(e.target.id==="shareMenuModal") closeShareModal(); });
+
+    document.getElementById("ssSplitAdd").addEventListener("click", ssAddSplit);
+    document.getElementById("ssDone").addEventListener("click", closeShareEditor);
+    document.getElementById("ssName").addEventListener("input", e=> ssRenameSet(e.target.value));
+    document.getElementById("ssSplitList").addEventListener("click", e=>{
+      const ad=e.target.closest("[data-ssex-add]");   if(ad){ openSsExPick(ad.dataset.ssexAdd); return; }
+      const xd=e.target.closest("[data-ssex-del]");   if(xd){ const [sp,ex]=xd.dataset.ssexDel.split(":"); ssRemoveEx(sp,ex); return; }
+      const sd=e.target.closest("[data-sssplit-del]");if(sd){ ssDelSplit(sd.dataset.sssplitDel); return; }
+    });
+    document.getElementById("ssSplitList").addEventListener("input", e=>{
+      const nm=e.target.closest("[data-sssplit-name]"); if(nm) ssRenameSplit(nm.dataset.sssplitName, nm.value);
+    });
+    document.getElementById("shareEditModal").addEventListener("click", e=>{ if(e.target.id==="shareEditModal") closeShareEditor(); });
+
+    document.getElementById("ssExPickAdd").addEventListener("click", ssExPickAdd);
+    document.getElementById("ssExPickCancel").addEventListener("click", closeSsExPick);
+    document.getElementById("ssExPickModal").addEventListener("click", e=>{ if(e.target.id==="ssExPickModal") closeSsExPick(); });
 
     document.getElementById("importConfirm").addEventListener("click", async ()=>{
       if(importPayload){ await importMenu(importPayload); toast("メニューを取り込みました"); }
