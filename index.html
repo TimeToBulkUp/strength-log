@@ -429,12 +429,14 @@
   .ins-guide{margin-top:13px;padding-top:13px;border-top:1px solid var(--line-soft);}
   .g-label{font-family:"Oswald",sans-serif;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:5px;display:flex;align-items:center;gap:9px;}
   .g-prog{font-size:10px;letter-spacing:.06em;color:var(--muted);background:var(--surface-2);border:1px solid var(--line-soft);border-radius:20px;padding:2px 9px;font-weight:500;text-transform:none;}
+  .g-mode{font-size:10px;letter-spacing:.06em;color:var(--accent);background:rgba(246,166,9,.12);border:1px solid var(--line-soft);border-radius:20px;padding:2px 9px;font-weight:600;text-transform:none;}
   .g-done{font-size:13px;color:var(--muted);line-height:1.7;}
   .g-done b{font-family:"Oswald",sans-serif;font-size:15px;color:var(--text);font-variant-numeric:tabular-nums;}
   .g-done b.up{color:var(--up);}
   .g-main{font-family:"Oswald",sans-serif;font-size:30px;font-weight:600;color:var(--text);line-height:1;font-variant-numeric:tabular-nums;}
   .g-main span{font-size:13px;color:var(--muted);font-family:"Noto Sans JP",sans-serif;font-weight:400;margin:0 3px;}
   .g-reason{font-size:12px;color:var(--muted);margin-top:7px;line-height:1.55;}
+  .g-range-note{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.5;}
   .ins-first{font-size:13px;color:var(--muted);line-height:1.6;text-align:center;}
 
   /* ---------- Split chips (record tab) ---------- */
@@ -798,30 +800,18 @@
     </div>
 
     <div class="field" style="text-align:left">
-      <label>性別</label>
-      <div class="chip-row" id="onboardGender">
-        <button class="chip" type="button" data-v="male">男性</button>
-        <button class="chip" type="button" data-v="female">女性</button>
-        <button class="chip" type="button" data-v="other">その他</button>
-        <button class="chip sel" type="button" data-v="unspecified">回答しない</button>
+      <label>あなたは？</label>
+      <div class="chip-row" id="onboardType">
+        <button class="chip sel" type="button" data-v="general">一般の方</button>
+        <button class="chip" type="button" data-v="athlete">アスリート</button>
       </div>
     </div>
-
-    <div class="field" style="text-align:left">
-      <label>トレーニング歴</label>
-      <div class="chip-row" id="onboardExperience">
-        <button class="chip sel" type="button" data-v="beginner">初心者(1年未満)</button>
-        <button class="chip" type="button" data-v="intermediate">中級者(1〜3年)</button>
-        <button class="chip" type="button" data-v="advanced">上級者(3年以上)</button>
-      </div>
-    </div>
-
-    <div class="field" style="text-align:left">
-      <label>目的</label>
-      <div class="chip-row" id="onboardPurpose">
-        <button class="chip sel" type="button" data-v="hypertrophy">筋量アップ</button>
-        <button class="chip" type="button" data-v="cut">減量</button>
-        <button class="chip" type="button" data-v="strength">筋力アップ</button>
+    <div class="field" style="text-align:left;display:none" id="onboardPeriodField">
+      <label>トレーニング期</label>
+      <div class="chip-row" id="onboardPeriod">
+        <button class="chip sel" type="button" data-v="hypertrophy">筋肥大期</button>
+        <button class="chip" type="button" data-v="strength">筋力期</button>
+        <button class="chip" type="button" data-v="power">パワー期</button>
       </div>
     </div>
 
@@ -834,31 +824,21 @@
   <div class="modal">
     <h3>プロフィール</h3>
     <div class="field">
-      <label>性別</label>
-      <div class="chip-row" id="profileGender">
-        <button class="chip" type="button" data-v="male">男性</button>
-        <button class="chip" type="button" data-v="female">女性</button>
-        <button class="chip" type="button" data-v="other">その他</button>
-        <button class="chip" type="button" data-v="unspecified">回答しない</button>
+      <label>あなたは？</label>
+      <div class="chip-row" id="profileType">
+        <button class="chip" type="button" data-v="general">一般の方</button>
+        <button class="chip" type="button" data-v="athlete">アスリート</button>
       </div>
     </div>
-    <div class="field">
-      <label>トレーニング歴</label>
-      <div class="chip-row" id="profileExperience">
-        <button class="chip" type="button" data-v="beginner">初心者(1年未満)</button>
-        <button class="chip" type="button" data-v="intermediate">中級者(1〜3年)</button>
-        <button class="chip" type="button" data-v="advanced">上級者(3年以上)</button>
+    <div class="field" style="display:none" id="profilePeriodField">
+      <label>トレーニング期</label>
+      <div class="chip-row" id="profilePeriod">
+        <button class="chip" type="button" data-v="hypertrophy">筋肥大期</button>
+        <button class="chip" type="button" data-v="strength">筋力期</button>
+        <button class="chip" type="button" data-v="power">パワー期</button>
       </div>
     </div>
-    <div class="field">
-      <label>目的</label>
-      <div class="chip-row" id="profilePurpose">
-        <button class="chip" type="button" data-v="hypertrophy">筋量アップ</button>
-        <button class="chip" type="button" data-v="cut">減量</button>
-        <button class="chip" type="button" data-v="strength">筋力アップ</button>
-      </div>
-    </div>
-    <div class="user-hint">「目的」は、次のセットの目安（何回で重量を上げるか）の計算に使われます。</div>
+    <div class="user-hint">「一般の方／アスリート」と「トレーニング期」は、次のセットの目安（回数）の計算に使われます。</div>
     <div class="field">
       <label>アクセスコード <span class="unit-tag" id="coachStatus"></span></label>
       <input type="text" id="profileCode" inputmode="numeric" placeholder="お持ちの方のみ" autocomplete="off">
@@ -1187,7 +1167,12 @@
       const btn=document.getElementById("onboardStart");
       const pick=pickChip;
 
-      ["onboardGender","onboardExperience","onboardPurpose"].forEach(wireSingleSelectChips);
+      ["onboardType","onboardPeriod"].forEach(wireSingleSelectChips);
+      const periodField=document.getElementById("onboardPeriodField");
+      document.getElementById("onboardType").addEventListener("click", e=>{
+        const c=e.target.closest("[data-v]"); if(!c) return;
+        periodField.style.display = (c.dataset.v==="athlete") ? "" : "none";
+      });
 
       view.classList.add("open");
       setTimeout(()=>input.focus(),150);
@@ -1199,9 +1184,8 @@
         view.classList.remove("open");
         resolve({
           name,
-          gender: pick("onboardGender"),
-          experience: pick("onboardExperience"),
-          purpose: pick("onboardPurpose")
+          type: pick("onboardType"),
+          period: pick("onboardPeriod")
         });
       };
       btn.addEventListener("click", submit);
@@ -1240,7 +1224,7 @@
         if(oldRaw){ try{ first = JSON.parse(oldRaw); }catch(e){ first = null; } }
         const d = normalize(first); d.__name = profile.name;
         if(!oldRaw){
-          d.profile = {gender:profile.gender, experience:profile.experience, purpose:profile.purpose};
+          d.profile = {type:profile.type, period:profile.period};
         }
         await sSet(uKey(id1), JSON.stringify(d));
         await saveMeta();
@@ -1426,25 +1410,6 @@
       return {dateKey:k, sets, vol};
     });
   }
-  // Index into pastSessionsList() that the *next-set target* should be based
-  // on. Normally the most recent one — but a session whose volume dropped
-  // 20%+ from the one before it (bad day / sick / deload) is skipped so a
-  // single off day doesn't reset progression. That session still shows up
-  // as-is everywhere else (history, the compare table, today-vs-previous
-  // stat) — this only changes what "前回" means for computing 目安.
-  function targetBasisIndex(list){
-    for(let i=0;i<list.length;i++){
-      const cur=list[i], prior=list[i+1];
-      if(prior && prior.vol>0 && cur.vol<=prior.vol*0.8) continue; // -20%以上の落ち込み日はスキップ
-      return i;
-    }
-    return list.length ? list.length-1 : -1;
-  }
-  function targetBasisSession(exId){
-    const list=pastSessionsList(exId);
-    const i=targetBasisIndex(list);
-    return i>=0 ? list[i] : null;
-  }
   // last N sessions (excluding today), newest first
   function recentSessions(exId, n){
     return pastSessionsList(exId).slice(0, n);
@@ -1463,85 +1428,125 @@
     const step=g/100;
     return (step>=0.5 && step<=10) ? step : null;
   }
-  // ---- 目安ロジック（全レベル統一・段階式＋回数レンジ） ----
-  // 目的×種目タイプ（多関節/単関節）で決まる回数レンジ。片側種目は両側分まとめて記録する前提で2倍。
-  const REP_RANGES = {
-    hypertrophy: { compound:[8,10],  iso:[10,12] },
-    strength:    { compound:[3,5],   iso:[6,8]   },
-    cut:         { compound:[10,12], iso:[13,15] },
-  };
+  // ---- 目安ロジック（3×10法 ＋ 停滞時の菅野式WP法） ----
+  function isAthlete(){ return !!(data.profile && data.profile.type === "athlete"); }
+  function athletePeriod(){ return (data.profile && data.profile.period) || "hypertrophy"; }
+
+  const GENERAL_RANGE = [8, 10];
+  const PERIOD_RANGES = { hypertrophy:[8,12], strength:[3,6], power:[1,5] };  // たたき台
   function repRange(exId){
     const ex = getExercise(exId);
-    const isCompound = ex ? ex.compound !== false : true;   // compound未定義は多関節扱い
-    const p = (data.profile && data.profile.purpose) || "hypertrophy";
-    const r = REP_RANGES[p] || REP_RANGES.hypertrophy;
-    let [low, high] = isCompound ? r.compound : r.iso;
-    if(ex && ex.unilateral){ low *= 2; high *= 2; }         // 片側種目は2倍
+    let [low, high] = isAthlete() ? (PERIOD_RANGES[athletePeriod()] || PERIOD_RANGES.hypertrophy) : GENERAL_RANGE;
+    if(ex && ex.unilateral){ low *= 2; high *= 2; }   // 片側種目は2倍（既存仕様を維持）
     return [low, high];
   }
-  // 前回セッションを基準に、今回の各セットの目標（重量は段階式、回数は[low,high]レンジ）を作る
-  function planTargets(prev, step, low, high, nSess){
-    const W = prev.sets.map(s=>s.weight);
-    const R = prev.sets.map(s=>s.reps);
-    const n = W.length || 3;
-    const Wlow  = Math.min(...W);
-    const Whigh = Math.max(...W);
-    const lead  = (nSess < 3) ? 2 : 1;                 // 始めたては2セットずつ繰り上げ
-    const mk    = (w, why="same") => ({ weight: snapStep(w, step), reps: high, low, high, why });
-    const stepUp= base => Array.from({length:n}, (_,i)=> i<lead ? mk(base+step,"up") : mk(base));
-    const hitHigh  = i => R[i] >= high;
-    const belowLow = i => R[i] <  low;
 
-    if(Whigh > Wlow){
-      // 繰り上げ進行中（先頭=Whigh, 残り=Wlow）
-      const leadIdx = W.map((w,i)=>({w,i})).filter(o=>o.w===Whigh).map(o=>o.i);
-      if(leadIdx.some(belowLow))  return Array.from({length:n}, (_,i)=> mk(Wlow, "down"));       // 新重量が下限割れ → 旧重量へ
-      if(leadIdx.every(hitHigh)){
-        const newLead = Math.min(n, leadIdx.length + lead);
-        if(newLead >= n) return stepUp(Whigh);                                                    // 全セット新重量で上限 → 次の+1段階
-        return Array.from({length:n}, (_,i)=> i<newLead ? mk(Whigh,"up") : mk(Wlow));             // もう1(2)セット繰り上げ
+  // 過去セッション（今日を除く）から、現在のモード（3×10法/菅野式WP法）と停滞カウントを求める。
+  // 保存はせず毎回リプレイするので、記録の編集・削除・日付移動に強い。
+  function progState(exId, high, n){
+    const sess = pastSessionsList(exId).slice().reverse();   // 古い → 新しい
+    const st = { mode:"lp", stall:0, wpW:null, wpFresh:false, prevTop:null, prevHits:-1 };
+    for(const s of sess){
+      if(!s.sets.length) continue;
+      const topW = Math.max(...s.sets.map(x=>x.weight));
+      const hits = s.sets.filter(x=>x.weight===topW && x.reps>=high).length;   // 新重量×目標回数の達成セット数
+      if(st.mode === "wp"){
+        st.wpFresh = false;
+        const wpHits = s.sets.filter(x=>x.weight===st.wpW && x.reps>=high).length;
+        if(wpHits >= n){ st.mode = "lp"; st.stall = 0; st.wpW = null; }   // 10×3達成 → 3×10法へ戻る（次回は+1段階）
+      } else {
+        const allDone = hits >= n;
+        const stalled = (st.prevTop !== null && topW === st.prevTop && hits <= st.prevHits && !allDone);
+        st.stall = stalled ? st.stall + 1 : 0;
+        if(st.stall >= 3){ st.mode = "wp"; st.wpW = topW; st.wpFresh = true; st.stall = 0; }
       }
-      return Array.from({length:n}, (_,i)=> mk(W[i]));                                             // レンジ内 → 現状維持
-    } else {
-      const W0 = Wlow;
-      if(R.slice(0,n).some((_,i)=>belowLow(i)))  return Array.from({length:n}, (_,i)=> mk(roundW(W0-step), "down")); // 下限割れ → 1段階下げ
-      if(R.slice(0,n).every((_,i)=>hitHigh(i)) && prev.sets.length>=Math.min(n,3)) return stepUp(W0);        // 全セット上限 → +1段階
-      return Array.from({length:n}, (_,i)=> mk(W0));                                                          // レンジ内 → 維持
+      st.prevTop = topW; st.prevHits = hits;
     }
+    return st;
+  }
+
+  // 3×10法: 前回の「新重量」と「下げ先（旧重量）」を決め、今日すでに記録したセットの結果で後続セットをその場で下げる
+  function lpTargets(prev, step, high, n, done){
+    const W = prev.sets.map(s=>s.weight);
+    const top = Math.max(...W), bottom = Math.min(...W);
+    const topHits = prev.sets.filter(s=>s.weight===top && s.reps>=high).length;
+    let newW, backW;
+    if(top === bottom){
+      if(topHits >= n){ newW = top + step; backW = top; }      // 全セット達成 → 次の重量へ
+      else            { newW = top;        backW = top - step; } // 同重量で未達 → 同重量に再挑戦（下げ先は1段階下）
+    } else {
+      newW = top; backW = bottom;                               // 繰り上げ途中 → 新重量に再挑戦、下げ先は旧重量
+    }
+    newW  = snapStep(newW, step);
+    backW = snapStep(Math.max(backW, 0), step);
+    const out = [];
+    let backed = false;
+    for(let i=0; i<n; i++){
+      const w = backed ? backW : newW;
+      const why = backed ? "back" : (newW > top ? "up" : "retry");
+      out.push({ weight:w, reps:high, why, newW, backW, mode:"lp" });
+      const d = done[i];
+      if(d && !backed && (d.weight < newW || d.reps < high)) backed = true;  // このセットで未達 or 自分で下げた → 以降は下げ先
+    }
+    return out;
+  }
+
+  // 菅野式WP法: その重量で8,8,8から始め、左隣より少ない最初のセット（全部そろっていたら1セット目）を+1ずつ積む
+  function wpTargets(prev, step, low, high, n, wpW, fresh){
+    let R;
+    if(fresh){
+      R = Array(n).fill(low);                                   // WPに入った直後は 8,8,8 から
+    } else {
+      R = Array.from({length:n}, (_,i)=>{
+        const s = prev.sets[i];
+        return (s && s.weight === wpW) ? Math.min(Math.max(s.reps, low), high) : low;
+      });
+      let pos = -1;
+      for(let i=1; i<n; i++){ if(R[i] < R[i-1]){ pos = i; break; } }   // 左隣より少ない最初のセット
+      if(pos === -1) pos = 0;                                            // 全部そろっていたら1セット目
+      if(R[pos] < high) R[pos]++;
+    }
+    return R.map(r => ({ weight: snapStep(wpW, step), reps:r, why:"wp", mode:"wp" }));
   }
 
   // full plan for today: one target per set of the previous session
   function planFor(exId){
-    const ex=getExercise(exId);
-    const step=(ex && typeof ex.step==="number") ? ex.step : (inferStep(exId) ?? 2.5);
-    const [low, high] = repRange(exId);
-    const list=pastSessionsList(exId);
-    const basisIdx=targetBasisIndex(list);
-    const prev=basisIdx>=0 ? list[basisIdx] : null;
-    const done=todaySetsOf(exId);
+    const ex = getExercise(exId);
+    const step = (ex && typeof ex.step==="number") ? ex.step : (inferStep(exId) ?? 2.5);
+    const presc = (typeof activePlan === "function") ? activePlan(exId) : null;   // 共有セットの処方（あれば）
+    const [low, high] = presc ? [presc.low, presc.high] : repRange(exId);
+    const list = pastSessionsList(exId);
+    const prev = list[0] || null;          // 3×10法は「直前の結果」が基準（不調日スキップは使わない。停滞カウントで吸収）
+    const done = todaySetsOf(exId);
+
     if(!prev || !prev.sets.length){
       if(!done.length) return {kind:"first"};
-      const top=done.reduce((a,b)=>(b.weight>a.weight||(b.weight===a.weight&&b.reps>a.reps))?b:a);
-      const t={weight:top.weight, reps:high, low, high, why:"same"};
-      return {kind:"noprev", next:t, doneCount:done.length, est:Math.round(e1RM(top.weight,top.reps))};
+      const top = done.reduce((a,b)=>(b.weight>a.weight||(b.weight===a.weight&&b.reps>a.reps))?b:a);
+      const t = { weight:top.weight, reps:high, why:"retry", mode:"lp", newW:top.weight, backW:top.weight };
+      return {kind:"noprev", next:t, doneCount:done.length, est:Math.round(e1RM(top.weight,top.reps)), mode:"lp"};
     }
 
-    const targets=planTargets(prev, step, low, high, list.length);
+    const n = presc ? presc.sets : Math.max(prev.sets.length, 1);
+    const st = progState(exId, high, n);
+    const targets = (st.mode === "wp")
+      ? wpTargets(prev, step, low, high, n, st.wpW, st.wpFresh)
+      : lpTargets(prev, step, high, n, done);
 
-    const total=targets.length;
-    const doneCount=done.length;
-    const remaining=targets.slice(doneCount);
-    const planVol=targets.reduce((a,t)=>a+t.weight*t.reps,0);
-    const top=prev.sets.reduce((a,b)=>(b.weight>a.weight||(b.weight===a.weight&&b.reps>a.reps))?b:a);
+    const doneCount = done.length;
+    const remaining = targets.slice(doneCount);
+    const top = prev.sets.reduce((a,b)=>(b.weight>a.weight||(b.weight===a.weight&&b.reps>a.reps))?b:a);
     return {
       kind: remaining.length ? "ok" : "done",
-      targets, remaining, total, doneCount,
+      targets, remaining, total: targets.length, doneCount,
       next: remaining[0] || null,
-      planVol,
-      est: Math.round(e1RM(top.weight,top.reps)),
-      prevVol: prev.vol
+      planVol: targets.reduce((a,t)=>a+t.weight*t.reps,0),
+      est: Math.round(e1RM(top.weight, top.reps)),
+      prevVol: prev.vol,
+      mode: st.mode, stall: st.stall
     };
   }
+  // 一般人は常にボリューム比較を隠す。アスリートも菅野式WP法中（谷が出るため）は隠す。
+  function hideVolume(s){ return !isAthlete() || (s && s.mode === "wp"); }
   function fmtMD(k){ const [,m,d]=k.split("-").map(Number); return m+"/"+d; }
 
   function renderInsight(){
@@ -1551,11 +1556,12 @@
     const prev=prevSession(exId);
     const tVol=todayExVol(exId);
     const s=planFor(exId);
+    const noVol=hideVolume(s);
 
     // 入力欄の初期値を、次のセットの目安（=前回の記録がベース）に合わせる
     if(s.next){
       document.getElementById("inWeight").value=s.next.weight;
-      document.getElementById("inReps").value=s.next.high ?? s.next.reps;
+      document.getElementById("inReps").value=s.next.reps;
     }
 
     let deltaHtml;
@@ -1567,7 +1573,7 @@
     } else {
       deltaHtml = `<div class="ins-delta">vs</div>`;
     }
-    const statsHtml=`<div class="ins-stats">
+    const statsHtml = noVol ? "" : `<div class="ins-stats">
       <div class="ins-stat"><div class="lbl">今日のボリューム</div><div class="val num">${fmtNum(tVol)}<span>kg</span></div></div>
       ${deltaHtml}
       <div class="ins-stat" style="text-align:right"><div class="lbl">前回 ${prev?fmtMD(prev.dateKey):""}</div><div class="val num muted">${prev?fmtNum(prev.vol):"—"}<span>kg</span></div></div>
@@ -1583,8 +1589,8 @@
           if(s.targets && s.targets.length>n) n=s.targets.length;
           if(!n) return "";
 
-          let h1 = `<th class="rowlab"></th><th class="tv">Total</th>`;
-          let h2 = `<th class="rowlab"></th><th class="tv"></th>`;
+          let h1 = `<th class="rowlab"></th>` + (noVol ? "" : `<th class="tv">Total</th>`);
+          let h2 = `<th class="rowlab"></th>` + (noVol ? "" : `<th class="tv"></th>`);
           for(let i=0;i<n;i++){
             h1 += `<th class="setno" colspan="2">${i+1}</th>`;
             h2 += `<th class="w">重量</th><th class="r">回数</th>`;
@@ -1593,7 +1599,7 @@
           function bodyRow(label, sets, vol, cls, compareTo){
             const isToday = cls.indexOf("row-today")>=0;
             const last = sets.length-1;   // close the box at the last recorded set
-            let tds = `<td class="rowlab">${label}</td><td class="tv">${sets.length?fmtNum(vol):"—"}</td>`;
+            let tds = `<td class="rowlab">${label}</td>` + (noVol ? "" : `<td class="tv">${sets.length?fmtNum(vol):"—"}</td>`);
             for(let i=0;i<n;i++){
               const x = sets[i];
               if(!x){
@@ -1621,13 +1627,13 @@
           rows += bodyRow("今日", tSets, todayExVol(exId), "row-today", prevSets);
 
           if(s.targets && s.targets.length){
-            let tds = `<td class="rowlab">目安</td><td class="tv">${fmtNum(s.planVol)}</td>`;
+            let tds = `<td class="rowlab">目安</td>` + (noVol ? "" : `<td class="tv">${fmtNum(s.planVol)}</td>`);
             for(let i=0;i<n;i++){
               const t = s.targets[i];
               if(!t){ tds += `<td class="w empty">·</td><td class="r empty">·</td>`; continue; }
               const isNext = (i === s.doneCount);
               const c = isNext ? " next" : (i < s.doneCount ? " past" : "");
-              tds += `<td class="w${c}">${fmtW(t.weight)}</td><td class="r${c}">${t.high ?? t.reps}</td>`;
+              tds += `<td class="w${c}">${fmtW(t.weight)}</td><td class="r${c}">${t.reps}</td>`;
             }
             rows += `<tr class="row-plan">${tds}</tr>`;
           }
@@ -1643,29 +1649,47 @@
         })()
       : "";
 
-    const WHY={up:"1段階アップ", same:"同重量で上限狙い", down:"下限割れのため1段階ダウン"};
-    const repsLabel = t => (t.low!=null && t.high!=null) ? `${t.low}〜${t.high}` : t.reps;
+    const WHY = {
+      up:    "新しい重量に挑戦",
+      retry: "同じ重量でもう一度10回に挑戦",
+      back:  "前のセットで届かなかったので重量を戻して確実に",
+      wp:    "菅野式WP法：1レップずつ積み上げ"
+    };
+    const modeLabel = m => `<span class="g-mode">${m==="wp" ? "菅野式WP法" : "3×10法"}</span>`;
+    const modeNote = (t, s) => t.mode === "wp"
+      ? `<div class="g-range-note">このセットは${t.reps}回。1レップずつ積み上げて、全セット上限がそろったら重量アップ。</div>`
+      : `<div class="g-range-note">${t.reps}回を目指す。届かなかったら、以降のセットは${fmtW(t.backW)}kg×${t.reps}回に下げる。</div>
+         ${s.stall > 0 ? `<div class="g-range-note">停滞 ${s.stall}/3（3回続くと菅野式WP法に切り替え）</div>` : ""}`;
     let guideHtml;
     if(s.kind==="ok"){
       const t=s.next;
       const setNo=s.doneCount+1;
       guideHtml=`<div class="ins-guide">
-        <div class="g-label">次のセットの目安 <span class="g-prog">${setNo} / ${s.total} セット目</span></div>
-        <div class="g-main num">${fmtW(t.weight)}<span>kg</span> × ${repsLabel(t)}</div>
-        <div class="g-reason">${WHY[t.why]} ・ 前回の${setNo}セット目が基準 ・ 推定1RM ${s.est}kg</div>
+        <div class="g-label">次のセットの目安 ${modeLabel(s.mode)}<span class="g-prog">${setNo} / ${s.total} セット目</span></div>
+        <div class="g-main num">${fmtW(t.weight)}<span>kg</span> × ${t.reps}</div>
+        ${modeNote(t, s)}
+        <div class="g-reason">${WHY[t.why]} ・ 推定1RM ${s.est}kg</div>
       </div>`;
     } else if(s.kind==="done"){
-      const diff=tVol-s.prevVol;
-      guideHtml=`<div class="ins-guide">
-        <div class="g-label">今日のメニュー完了</div>
-        <div class="g-done">${s.total}セットすべて記録しました。<br>
-        ${diff>=0?`前回を <b class="up">${fmtNum(diff)}kg</b> 上回っています。お疲れさまでした。`:`前回まであと <b>${fmtNum(-diff)}kg</b>。追加でセットを組んでもOKです。`}</div>
-      </div>`;
+      guideHtml = noVol
+        ? `<div class="ins-guide">
+            <div class="g-label">今日のメニュー完了</div>
+            <div class="g-done">${s.total}セットすべて記録しました。お疲れさまでした。</div>
+          </div>`
+        : (()=>{
+            const diff=tVol-s.prevVol;
+            return `<div class="ins-guide">
+              <div class="g-label">今日のメニュー完了</div>
+              <div class="g-done">${s.total}セットすべて記録しました。<br>
+              ${diff>=0?`前回を <b class="up">${fmtNum(diff)}kg</b> 上回っています。お疲れさまでした。`:`前回まであと <b>${fmtNum(-diff)}kg</b>。追加でセットを組んでもOKです。`}</div>
+            </div>`;
+          })();
     } else if(s.kind==="noprev"){
       const t=s.next;
       guideHtml=`<div class="ins-guide">
-        <div class="g-label">次のセットの目安</div>
-        <div class="g-main num">${fmtW(t.weight)}<span>kg</span> × ${repsLabel(t)}</div>
+        <div class="g-label">次のセットの目安 ${modeLabel(s.mode)}</div>
+        <div class="g-main num">${fmtW(t.weight)}<span>kg</span> × ${t.reps}</div>
+        ${modeNote(t, s)}
         <div class="g-reason">今日のセットを基準にした目安 ・ 推定1RM ${s.est}kg</div>
       </div>`;
     } else {
@@ -1684,6 +1708,7 @@
     const w = parseFloat(document.getElementById("inWeight").value);
     const r = parseInt(document.getElementById("inReps").value, 10);
     if(!exId || isNaN(w) || isNaN(r) || w < 0 || r <= 0){ box.innerHTML=""; return; }
+    if(hideVolume(planFor(exId))){ box.innerHTML=""; return; }
 
     const idx = todaySetsOf(exId).length;
     const todayCum = todaySetsOf(exId).reduce((a,s)=>a + s.weight*s.reps, 0) + w*r;
@@ -1803,9 +1828,9 @@
   // ---- profile edit ----
   function openProfileModal(){
     const p=data.profile||{};
-    selectChip("profileGender", p.gender||"unspecified");
-    selectChip("profileExperience", p.experience||"intermediate");
-    selectChip("profilePurpose", p.purpose||"hypertrophy");
+    selectChip("profileType", p.type==="athlete" ? "athlete" : "general");
+    selectChip("profilePeriod", p.period||"hypertrophy");
+    document.getElementById("profilePeriodField").style.display = (p.type==="athlete") ? "" : "none";
     const isCoach = !!(data.profile && data.profile.coach);
     document.getElementById("coachStatus").textContent = isCoach ? "コーチ権限 有効" : "";
     const codeField = document.getElementById("profileCode");
@@ -1822,12 +1847,7 @@
       if(await sha256hex(code) === CODE_HASH){ coach = true; toast("コーチ権限を有効化しました"); }
       else { toast("コードが正しくありません"); }
     }
-    data.profile={
-      gender: pickChip("profileGender"),
-      experience: pickChip("profileExperience"),
-      purpose: pickChip("profilePurpose"),
-      coach
-    };
+    data.profile = { type: pickChip("profileType"), period: pickChip("profilePeriod"), coach };
     await save();
     renderAll();
     closeProfileModal();
@@ -2739,7 +2759,11 @@
     document.getElementById("userNameInput").addEventListener("keydown",e=>{ if(e.key==="Enter") commitUser(); });
     document.getElementById("userRecoverBtn").addEventListener("click",runRecovery);
     document.getElementById("userDiagBtn").addEventListener("click",runDiagnostics);
-    ["profileGender","profileExperience","profilePurpose"].forEach(wireSingleSelectChips);
+    ["profileType","profilePeriod"].forEach(wireSingleSelectChips);
+    document.getElementById("profileType").addEventListener("click", e=>{
+      const c=e.target.closest("[data-v]"); if(!c) return;
+      document.getElementById("profilePeriodField").style.display = (c.dataset.v==="athlete") ? "" : "none";
+    });
     document.getElementById("userProfileBtn").addEventListener("click",()=>{ closeUserSheet(); openProfileModal(); });
     document.getElementById("profileCancel").addEventListener("click",closeProfileModal);
     document.getElementById("profileSave").addEventListener("click",saveProfile);
