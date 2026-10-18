@@ -65,6 +65,14 @@ tail -n +<その行+1> index.html >> index.personal.html
 ### Excelデータの更新方法
 アプリ内にExcel取り込みUIは無い（一時期SheetJSで実装したが、UIが煩雑なため削除済み）。菅野涼太の`sugano-bundle.local.js`を最新のExcelに合わせて更新したい場合は、Claude Codeにその都度Excelファイルの場所を伝えて変換してもらう運用（Python + openpyxlで差分抽出 → `mergeIncoming`と同じ重複排除ロジックで安全にマージ）。
 
+## 種目カタログ（`MASTER_EXERCISES`）に種目を足すとき
+全員共通の固定カタログ。既存の自作種目・記録には手を付けず、カタログだけを更新する前提で:
+- 部位ごとのブロックの該当位置に1行追加する（並び順＝ピッカーでの表示順）。
+- `id` は `m_` で始まる**新しい英字ID**。既存（外した種目を含む）と重複させない。使い回し禁止（記録・共有セットがIDで紐づく）。
+- `body`（胸／背中／肩／脚／腕／体幹）、`compound`（多関節=true／単関節=false）、片側種目なら `unilateral:true`。
+- `kind`（`barbell`／`machine`／`dumbbell`／`bodyweight`／`assist`）。初回の始め方の案内（`firstGuide`）と進め方（3×10法／段階式／自重／補助）がこれで決まる。
+- 外すときは配列から削除せず `retired:true` を付ける（新規選択はできなくなるが、既に使っている人の記録・分割はそのまま動く）。
+
 ## コードの地図（すべて index.html 内の1つのIIFE）
 
 - 保存層: `probeBackend / sGet / sSet / sDel / sList / save / saveMeta`
