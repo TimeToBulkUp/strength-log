@@ -557,23 +557,31 @@
   .sh-new{border-style:dashed;}
   .sh-namerow{display:flex;gap:8px;align-items:center;margin-top:10px;}
   .sh-name{flex:1;height:42px;background:var(--well);border:1px solid var(--line);border-radius:10px;color:var(--text);font-size:16px;padding:0 12px;}
-  .sh-ex{border-top:1px solid var(--line-soft);padding:10px 0;}
+  .sh-ex{width:100%;display:flex;align-items:center;gap:10px;padding:12px 2px;border:none;border-top:1px solid var(--line-soft);
+         background:none;color:inherit;font-family:inherit;text-align:left;cursor:pointer;}
   .sh-step + .sh-ex{border-top:none;}
-  .sh-ex-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+  .sh-ex:active{background:var(--surface-2);}
+  .sh-ex-body{flex:1;min-width:0;}
   .sh-ex-name{font-weight:700;font-size:15px;}
-  .sh-ex-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:6px;}
-  .sh-lbl{width:56px;font-size:12px;color:var(--muted);flex:none;}
-  .sh-stepper{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:10px;overflow:hidden;}
-  .sh-stepper button{width:38px;height:38px;background:var(--surface-2);border:none;color:var(--text);font-size:18px;cursor:pointer;}
-  .sh-stepper button:active{background:var(--accent);color:var(--bg);}
-  .sh-stepper span{min-width:36px;text-align:center;font-size:16px;font-variant-numeric:tabular-nums;}
-  .sh-tilde{color:var(--muted);}
-  .sh-note{font-size:12px;color:var(--faint);}
+  .sh-ex-sum{font-size:13px;color:var(--accent);margin-top:3px;font-variant-numeric:tabular-nums;}
+  .sh-ex-sum.def{color:var(--muted);}
+  .sh-tag{display:inline-block;font-size:11px;color:var(--faint);border:1px solid var(--line);border-radius:6px;padding:1px 6px;margin-left:6px;vertical-align:2px;}
+  .sh-ex-go{color:var(--faint);font-size:18px;}
   .sh-qr{display:flex;justify-content:center;padding:10px 0;background:#fff;border-radius:10px;margin:10px 0;}
   .sh-url{width:100%;height:40px;background:var(--well);border:1px solid var(--line);border-radius:10px;color:var(--muted);font-size:12px;padding:0 10px;}
   .sh-actions{display:flex;gap:8px;margin-top:10px;}
   .sh-actions > *{flex:1;}
   .pick-search{width:100%;height:42px;margin-bottom:10px;background:var(--well);border:1px solid var(--line);border-radius:10px;color:var(--text);font-size:16px;padding:0 12px;}
+
+  #shExModal .modal{max-height:92vh;overflow-y:auto;}
+  .shex-sub{font-size:12px;color:var(--faint);margin:-12px 0 16px;}
+  .shex-num{min-width:44px;}
+  .shex-custom{display:none;align-items:center;gap:8px;margin-top:10px;}
+  .shex-custom.show{display:flex;}
+  .shex-custom input{width:72px;height:44px;text-align:center;background:var(--well);border:1px solid var(--line);border-radius:10px;color:var(--text);font-size:17px;}
+  .shex-custom span{color:var(--muted);font-size:13px;}
+  .field-hint{font-size:12px;color:var(--faint);margin-top:8px;line-height:1.5;}
+  .shex-link{width:100%;margin-top:14px;background:none;border:none;color:var(--muted);font-family:inherit;font-size:12px;text-decoration:underline;cursor:pointer;}
 
   @media (prefers-reduced-motion:reduce){
     *{animation:none !important;transition:none !important;}
@@ -770,6 +778,39 @@
     <button class="ex-archive" id="exArchive" style="display:none"></button>
     <button class="ex-reset" id="exReset" style="display:none">カタログの設定に戻す</button>
     <button class="ex-delete" id="exDelete" style="display:none">この種目を完全に削除（記録も消えます）</button>
+  </div>
+</div>
+
+<!-- 共有セットの種目：セット数・回数の設定 -->
+<div class="modal-bg" id="shExModal">
+  <div class="modal">
+    <h3 id="shExTitle">種目</h3>
+    <div class="shex-sub" id="shExSub"></div>
+    <div class="field">
+      <label>セット数</label>
+      <div class="chip-row" id="shSetChips"></div>
+    </div>
+    <div class="field" id="shRepField">
+      <label>回数の範囲</label>
+      <div class="chip-row" id="shRepChips"></div>
+      <div class="shex-custom" id="shRepCustom">
+        <input type="number" id="shRepLo" inputmode="numeric" min="1" max="100">
+        <span>〜</span>
+        <input type="number" id="shRepHi" inputmode="numeric" min="1" max="100">
+        <span>回</span>
+      </div>
+      <div class="field-hint" id="shRepHint"></div>
+    </div>
+    <div class="field" id="shBwField" style="display:none">
+      <label>回数</label>
+      <div class="field-hint">自重の種目は、前回から1回ずつ増やします。</div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="shExCancel">キャンセル</button>
+      <button class="btn-solid" id="shExSave">保存</button>
+    </div>
+    <button class="shex-link" id="shExSettings">器具・初期の重さなど、種目の設定を開く</button>
+    <button class="ex-delete" id="shExRemove">この分割から外す</button>
   </div>
 </div>
 
@@ -2786,25 +2827,23 @@
     }
   }
 
-  // 種目1つ分のカード：名前＋セット数・回数の ＋／− ボタン
+  // 種目1つ分の行：名前＋セット数・回数の要約（タップでシートが開く）
+  function shPrescText(id, p){
+    const e = getExercise(id);
+    if(e && e.kind === "bodyweight") return `${p.sets}セット × 前回+1回`;
+    return `${p.sets}セット × ${p.low === p.high ? p.high : p.low + "〜" + p.high}回`;
+  }
   function shExRow(sp, id){
     const e = getExercise(id);
-    const p = (sp.plan && sp.plan[id]) || defaultPresc(id);
-    const bw = e && e.kind === "bodyweight";
-    const st = (f, v) => `<div class="sh-stepper">
-        <button type="button" data-sh="step" data-f="${f}" data-d="-1" data-id="${id}" aria-label="減らす">−</button>
-        <span class="num">${v}</span>
-        <button type="button" data-sh="step" data-f="${f}" data-d="1" data-id="${id}" aria-label="増やす">＋</button>
-      </div>`;
-    return `<div class="sh-ex">
-      <div class="sh-ex-head">
+    const saved = sp.plan && sp.plan[id];
+    const p = saved || defaultPresc(id);
+    return `<button type="button" class="sh-ex" data-sh="edit-ex" data-id="${id}">
+      <div class="sh-ex-body">
         <div class="sh-ex-name">${e ? escapeHtml(e.name) : "(削除された種目)"}</div>
-        <button class="icon-btn sm" data-sh="rm-ex" data-id="${id}" aria-label="外す">${MINUS}</button>
+        <div class="sh-ex-sum ${saved ? "" : "def"}">${shPrescText(id, p)}${saved ? "" : `<span class="sh-tag">既定</span>`}</div>
       </div>
-      <div class="sh-ex-row"><span class="sh-lbl">セット数</span>${st("sets", p.sets)}</div>
-      ${bw ? `<div class="sh-ex-row"><span class="sh-lbl">回数</span><span class="sh-note">前回から1回ずつ増やす</span></div>`
-           : `<div class="sh-ex-row"><span class="sh-lbl">回数</span>${st("low", p.low)}<span class="sh-tilde">〜</span>${st("high", p.high)}</div>`}
-    </div>`;
+      <span class="sh-ex-go" aria-hidden="true">›</span>
+    </button>`;
   }
 
   async function shAction(a, el){
@@ -2828,21 +2867,7 @@
         if(!sp || !confirm(`「${sp.name}」を削除しますか？`)) return;
         ss.splits = ss.splits.filter(x => x.id !== sp.id); shareSplitSelId = null; break;
       case "add-ex":     openAddExSheet({ kind:"share", shareId: ss.id, splitId: sp.id }); return;   // 分割の種目追加と同じ画面
-      case "rm-ex":
-        sp.exIds = sp.exIds.filter(x => x !== el.dataset.id);
-        if(sp.plan) delete sp.plan[el.dataset.id];
-        break;
-      case "step": {
-        const id = el.dataset.id, f = el.dataset.f, d = parseInt(el.dataset.d, 10);
-        sp.plan = sp.plan || {};
-        if(!sp.plan[id]) sp.plan[id] = defaultPresc(id);
-        const p = sp.plan[id];
-        const lim = { sets:[1,10], low:[1,100], high:[1,100] }[f];
-        p[f] = Math.min(lim[1], Math.max(lim[0], p[f] + d));
-        if(f === "low"  && p.high < p.low) p.high = p.low;    // 下限を上げて上限を超えたら、上限も合わせる
-        if(f === "high" && p.high < p.low) p.low  = p.high;   // 上限を下げて下限を下回ったら、下限も合わせる
-        break;
-      }
+      case "edit-ex":    openShExModal(el.dataset.id); return;
       case "copy": {
         const url = document.querySelector("#shareTab .sh-url").value;
         try{ await navigator.clipboard.writeText(url); }
@@ -2865,6 +2890,72 @@
     if(kind === "set"){ const ss = selShare(); if(ss) ss.name = v; }
     else { const sp = selShareSplit(); if(sp) sp.name = v; }
     save();
+  }
+
+  // ---- share-tab exercise sheet: set count / rep range (same look as #exModal) ----
+  const SH_REP_PRESETS = [[5,6],[6,8],[8,10],[10,12],[12,15],[15,20]];
+  function shRepPresets(id){
+    const e = getExercise(id);
+    return (e && e.unilateral) ? SH_REP_PRESETS.map(([a,b]) => [a*2, b*2]) : SH_REP_PRESETS;   // 片側は左右合計
+  }
+  let shEdit = null;   // { splitRef, id, d:{sets,low,high}, custom:boolean }
+
+  function openShExModal(id){
+    const sp = selShareSplit(); if(!sp) return;
+    const e = getExercise(id);
+    const p = (sp.plan && sp.plan[id]) || defaultPresc(id);
+    const d = { sets:p.sets, low:p.low, high:p.high };
+    const custom = !shRepPresets(id).some(([a,b]) => a === d.low && b === d.high);
+    shEdit = { id, d, custom };
+
+    document.getElementById("shExTitle").textContent = e ? e.name : "(削除された種目)";
+    const KIND_LABEL = { barbell:"バーベル", dumbbell:"ダンベル", machine:"マシン（ピン式）", plate:"マシン（プレート式）", bodyweight:"自重", assist:"補助" };
+    document.getElementById("shExSub").textContent =
+      [e && KIND_LABEL[e.kind], e && e.unilateral ? "片側" : ""].filter(Boolean).join("・");
+    const bw = e && e.kind === "bodyweight";
+    document.getElementById("shRepField").style.display = bw ? "none" : "";
+    document.getElementById("shBwField").style.display  = bw ? "" : "none";
+    document.getElementById("shRepHint").textContent = (e && e.unilateral)
+      ? "片側の種目なので、左右合計の回数です。"
+      : "上の回数まで届いたら重さを上げます。";
+    drawShExModal();
+    document.getElementById("shExModal").classList.add("open");
+  }
+
+  function drawShExModal(){
+    const { id, d } = shEdit;
+    document.getElementById("shSetChips").innerHTML = [1,2,3,4,5,6].map(n =>
+      `<button type="button" class="chip shex-num ${d.sets === n ? "sel" : ""}" data-shs="${n}">${n}</button>`).join("");
+    const ps = shRepPresets(id);
+    document.getElementById("shRepChips").innerHTML = ps.map(([a,b]) =>
+      `<button type="button" class="chip ${!shEdit.custom && a === d.low && b === d.high ? "sel" : ""}" data-shr="${a}-${b}">${a}〜${b}回</button>`).join("")
+      + `<button type="button" class="chip ${shEdit.custom ? "sel" : ""}" data-shr="custom">その他</button>`;
+    document.getElementById("shRepCustom").classList.toggle("show", shEdit.custom);
+    document.getElementById("shRepLo").value = d.low;
+    document.getElementById("shRepHi").value = d.high;
+  }
+
+  function closeShExModal(){ document.getElementById("shExModal").classList.remove("open"); shEdit = null; }
+
+  async function saveShExModal(){
+    const sp = selShareSplit(); if(!sp || !shEdit) return;
+    const d = shEdit.d;
+    if(shEdit.custom){
+      const lo = parseInt(document.getElementById("shRepLo").value, 10);
+      const hi = parseInt(document.getElementById("shRepHi").value, 10);
+      if(isNaN(lo) || lo < 1){ toast("回数を入力してください"); return; }
+      d.low = Math.min(lo, 100);
+      d.high = isNaN(hi) ? d.low : Math.min(Math.max(hi, d.low), 100);   // 上限が下限より小さければ下限にそろえる
+    }
+    sp.plan = sp.plan || {};
+    sp.plan[shEdit.id] = { sets:d.sets, low:d.low, high:d.high };
+    await save(); closeShExModal(); renderShareTab();
+  }
+  async function removeShEx(){
+    const sp = selShareSplit(); if(!sp || !shEdit) return;
+    sp.exIds = sp.exIds.filter(x => x !== shEdit.id);
+    if(sp.plan) delete sp.plan[shEdit.id];
+    await save(); closeShExModal(); renderShareTab();
   }
 
   // ---- import a shared menu (additive, same-name merge keeps history) ----
@@ -2993,9 +3084,14 @@
   }
   function closeAddExSheet(){ document.getElementById("addExSheet").classList.remove("open"); addExTo = null; }
   // 追加したあと、開いている画面を描き直す
-  function afterAddEx(){
-    if(addExTo && addExTo.kind === "share") renderShareTab();
-    else { renderSplits(); renderSelects(); renderInsight(); }
+  // justAddedId: 1種目だけ追加したときのその種目ID（共有タブなら続けてセット数・回数のシートを開く）
+  function afterAddEx(justAddedId){
+    if(addExTo && addExTo.kind === "share"){
+      renderShareTab();
+      if(justAddedId) openShExModal(justAddedId);
+    } else {
+      renderSplits(); renderSelects(); renderInsight();
+    }
   }
   function renderNewExBody(){
     document.getElementById("newExBody").innerHTML=BODYPARTS.map(b=>
@@ -3036,7 +3132,9 @@
     if(!addExSel.size){ toast("種目を選んでください"); return; }
     const sp=addExTarget();
     if(sp){ addExSel.forEach(id=>{ if(!sp.exIds.includes(id)) sp.exIds.push(id); }); }
-    await save(); afterAddEx(); closeAddExSheet();
+    await save();
+    afterAddEx(addExSel.size === 1 ? [...addExSel][0] : null);
+    closeAddExSheet();
     toast(addExSel.size+"種目を追加しました");
   }
   async function createAndAddExercise(){
@@ -3050,7 +3148,7 @@
         const sp = addExTarget();
         if(sp && !sp.exIds.includes(hit.id)) sp.exIds.push(hit.id);
         await save(); inp.value = "";
-        renderAddExPick(); afterAddEx();
+        renderAddExPick(); afterAddEx(hit.id);
         toast(`「${name}」を追加しました`);
         return;
       }
@@ -3062,7 +3160,7 @@
     if(sp && !sp.exIds.includes(e.id)) sp.exIds.push(e.id);
     await save();
     inp.value="";
-    renderAddExPick(); afterAddEx();
+    renderAddExPick(); afterAddEx(e.id);
     toast(`「${name}」を追加しました`);
   }
   async function moveExercise(splitId, exId, dir){
@@ -3191,21 +3289,21 @@
       const archived = !(data.exPrefs[editingExId] && data.exPrefs[editingExId].archived);
       data.exPrefs[editingExId] = data.exPrefs[editingExId] || {};
       data.exPrefs[editingExId].archived = archived;
-      await save(); renderAll(); closeExModal();
+      await save(); renderAll(); if(isCoach()) renderShareTab(); closeExModal();
       toast(archived ? "種目を一覧から隠しました" : "種目を一覧に戻しました");
       return;
     }
     const e=data.exercises.find(x=>x.id===editingExId);
     if(!e) return;
     e.archived=!e.archived;
-    await save(); renderAll(); closeExModal();
+    await save(); renderAll(); if(isCoach()) renderShareTab(); closeExModal();
     toast(e.archived ? "種目を一覧から隠しました" : "種目を一覧に戻しました");
   }
   async function resetCatalogEx(){
     if(!editingExId || !isMaster(editingExId)) return;
     if(!confirm("この種目をカタログの設定に戻しますか？（記録は消えません）")) return;
     delete data.exPrefs[editingExId];
-    await save(); renderAll(); closeExModal();
+    await save(); renderAll(); if(isCoach()) renderShareTab(); closeExModal();
     toast("カタログの設定に戻しました");
   }
   function renderBodyChips(){
@@ -3241,7 +3339,7 @@
       }
       if(data.exPrefs[m.id] && data.exPrefs[m.id].archived) p.archived = true;
       if(Object.keys(p).length) data.exPrefs[m.id] = p; else delete data.exPrefs[m.id];
-      await save(); renderAll(); closeExModal();
+      await save(); renderAll(); if(isCoach()) renderShareTab(); closeExModal();
       toast("種目を更新しました（この端末だけ）");
       return;
     }
@@ -3265,7 +3363,7 @@
       data.exercises.push(newEx);
       toast("種目を追加しました");
     }
-    await save(); renderAll(); closeExModal();
+    await save(); renderAll(); if(isCoach()) renderShareTab(); closeExModal();
   }
   async function delEx(id){
     if(isMaster(id)) return; // カタログ種目は削除不可（UI上は出さない前提の二重防御）
@@ -3367,6 +3465,26 @@
     });
     shareTabEl.addEventListener("input",  e => { const n = e.target.closest("[data-sh-name]"); if(n) shRename(n.dataset.shName, n.value); });
     shareTabEl.addEventListener("change", e => { if(e.target.closest("[data-sh-name]")) renderShareTab(); });
+
+    const shExModalEl = document.getElementById("shExModal");
+    shExModalEl.addEventListener("click", e => {
+      if(e.target.id === "shExModal"){ closeShExModal(); return; }
+      const s = e.target.closest("[data-shs]");
+      if(s){ shEdit.d.sets = parseInt(s.dataset.shs, 10); drawShExModal(); return; }
+      const r = e.target.closest("[data-shr]");
+      if(r){
+        if(r.dataset.shr === "custom"){ shEdit.custom = true; }
+        else { const [a,b] = r.dataset.shr.split("-").map(Number); shEdit.d.low = a; shEdit.d.high = b; shEdit.custom = false; }
+        drawShExModal(); return;
+      }
+    });
+    document.getElementById("shExCancel").addEventListener("click", closeShExModal);
+    document.getElementById("shExSave").addEventListener("click", saveShExModal);
+    document.getElementById("shExRemove").addEventListener("click", removeShEx);
+    document.getElementById("shExSettings").addEventListener("click", () => {
+      const id = shEdit && shEdit.id; closeShExModal();
+      if(id) openExModal(id);
+    });
 
     document.getElementById("importConfirm").addEventListener("click", async ()=>{
       if(importPayload){ await importMenu(importPayload); toast("メニューを取り込みました"); }
