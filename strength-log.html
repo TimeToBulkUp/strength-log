@@ -77,6 +77,56 @@
     color:var(--faint);font-weight:500;text-transform:uppercase;
   }
   .user-pill{display:flex;align-items:center;gap:8px;background:var(--surface-2);border:1px solid var(--line);border-radius:22px;padding:5px 10px 5px 5px;cursor:pointer;font-family:inherit;color:var(--text);max-width:160px;}
+  .help-btn{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--surface-2);color:var(--text);font-family:"Oswald",sans-serif;font-weight:600;font-size:17px;cursor:pointer;flex:none;}
+  .help-btn:active{border-color:var(--accent);color:var(--accent);}
+  .help-modal{max-height:86vh;overflow-y:auto;}
+  .help-list{margin-top:12px;}
+  .help-list details{border-top:1px solid var(--line-soft);}
+  .help-list details:first-child{border-top:none;}
+  .help-list summary{list-style:none;cursor:pointer;padding:14px 26px 14px 2px;font-size:14px;font-weight:500;position:relative;line-height:1.5;}
+  .help-list summary::-webkit-details-marker{display:none;}
+  .help-list summary::after{content:"＋";position:absolute;right:4px;top:13px;color:var(--muted);}
+  .help-list details[open] summary::after{content:"−";color:var(--accent);}
+  .help-list details p{font-size:13px;line-height:1.8;color:var(--muted);padding:0 2px 14px;}
+  .tut{position:fixed;inset:0;z-index:210;background:var(--bg);display:none;flex-direction:column;max-width:var(--maxw);margin:0 auto;}
+  .tut.open{display:flex;}
+  .tut-top{display:flex;justify-content:space-between;align-items:center;padding:calc(14px + env(safe-area-inset-top)) 20px 6px;}
+  .tut-brand{font-family:"Oswald",sans-serif;font-size:11px;letter-spacing:.28em;color:var(--faint);text-transform:uppercase;}
+  .tut-skip{background:none;border:none;color:var(--muted);font-family:inherit;font-size:14px;padding:8px 4px;cursor:pointer;}
+  .tut-track{flex:1;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;}
+  .tut-track::-webkit-scrollbar{display:none;}
+  .tut-card{flex:0 0 100%;scroll-snap-align:start;padding:8px 24px 0;overflow-y:auto;}
+  .tut-step{font-family:"Oswald",sans-serif;font-size:12px;letter-spacing:.2em;color:var(--accent);margin-bottom:10px;}
+  .tut-card h2{font-size:22px;font-weight:700;line-height:1.4;margin-bottom:12px;}
+  .tut-card p{font-size:14px;line-height:1.8;color:var(--muted);}
+  .tut-card p b{color:var(--text);font-weight:500;}
+  .tut-illust{background:var(--surface);border:1px solid var(--line-soft);border-radius:16px;padding:18px;margin:6px 0 22px;}
+  .tut-flow{display:flex;flex-direction:column;gap:10px;}
+  .tut-row{display:flex;align-items:center;gap:12px;}
+  .tut-num{width:26px;height:26px;border-radius:50%;background:var(--accent);color:#1a1204;font-family:"Oswald",sans-serif;font-weight:600;font-size:14px;display:flex;align-items:center;justify-content:center;flex:none;}
+  .tut-chip{border:1px solid var(--line);background:var(--well);border-radius:9px;padding:7px 12px;font-size:13px;}
+  .tut-chip.sel{background:var(--accent);border-color:var(--accent);color:#1a1204;font-weight:500;}
+  .tut-minibtn{margin-top:4px;height:40px;border-radius:9px;background:var(--accent);color:#1a1204;font-family:"Oswald",sans-serif;font-weight:600;letter-spacing:.08em;font-size:14px;display:flex;align-items:center;justify-content:center;}
+  .tut-glabel{font-family:"Oswald",sans-serif;font-size:11px;letter-spacing:.2em;color:var(--accent);margin-bottom:6px;}
+  .tut-gmain{font-family:"Oswald",sans-serif;font-size:36px;font-weight:600;line-height:1;}
+  .tut-gmain span{font-size:14px;color:var(--muted);font-family:"Noto Sans JP",sans-serif;font-weight:400;margin:0 3px;}
+  .tut-gnote{font-size:12px;color:var(--muted);margin-top:8px;}
+  .tut-inputs{display:flex;gap:8px;margin-top:14px;}
+  .tut-inp{flex:1;background:var(--well);border:1px solid var(--line);border-radius:10px;height:44px;display:flex;align-items:center;justify-content:center;font-family:"Oswald",sans-serif;font-size:20px;}
+  .tut-inp small{font-family:"Noto Sans JP",sans-serif;font-size:11px;color:var(--faint);margin-left:4px;}
+  .tut-kind{display:flex;justify-content:space-between;align-items:center;padding:11px 2px;border-top:1px solid var(--line-soft);font-size:14px;}
+  .tut-kind:first-child{border-top:none;padding-top:2px;}
+  .tut-kind span:last-child{color:var(--accent);font-weight:500;text-align:right;}
+  .tut-kind small{color:var(--muted);font-weight:400;}
+  .tut-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+  .tut-hdr-title{font-weight:700;font-size:15px;}
+  .tut-q{width:34px;height:34px;border-radius:50%;border:2px solid var(--accent);color:var(--accent);display:flex;align-items:center;justify-content:center;font-family:"Oswald",sans-serif;font-weight:600;font-size:17px;box-shadow:0 0 0 6px rgba(246,166,9,.15);}
+  .tut-qa{background:var(--well);border:1px solid var(--line-soft);border-radius:9px;padding:9px 12px;font-size:12px;color:var(--muted);margin-top:6px;}
+  .tut-qa.re{color:var(--accent);border-color:var(--accent-dim);}
+  .tut-bottom{padding:14px 24px calc(20px + env(safe-area-inset-bottom));}
+  .tut-dots{display:flex;justify-content:center;gap:8px;margin-bottom:16px;}
+  .tut-dots span{width:7px;height:7px;border-radius:50%;background:var(--line);transition:.2s;}
+  .tut-dots span.on{width:22px;border-radius:4px;background:var(--accent);}
   .user-pill .user-pill-name{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .user-pill svg{color:var(--muted);flex:none;}
   .user-ava{width:32px;height:32px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;font-family:"Oswald",sans-serif;font-weight:600;font-size:15px;color:#1a1204;background:var(--accent);}
@@ -489,6 +539,8 @@
   .newex-btn{flex:none;width:82px;height:var(--tap);}
   .ex-delete{width:100%;margin-top:14px;background:none;border:none;color:var(--danger);font-family:inherit;font-size:12px;cursor:pointer;text-decoration:underline;}
   .ex-archive{width:100%;margin-top:14px;background:none;border:none;color:var(--muted);font-family:inherit;font-size:12px;cursor:pointer;text-decoration:underline;}
+  .ex-reset{width:100%;margin-top:14px;background:none;border:none;color:var(--muted);font-family:inherit;font-size:12px;cursor:pointer;text-decoration:underline;}
+  .ex-reset:disabled{color:var(--faint);cursor:default;text-decoration:none;}
 
   .vol-preview{display:flex;justify-content:space-between;align-items:center;gap:10px;
     margin-top:10px;min-height:20px;font-size:14px;color:var(--muted);}
@@ -500,9 +552,28 @@
   .vp-cmp.muted{font-weight:400;}
   .vp-sub{font-size:11px;font-weight:400;color:var(--muted);}
   .vp-ok{color:var(--up);}
-  .ss-presc{flex-basis:100%;display:flex;gap:6px;align-items:center;margin-top:6px;font-size:12px;color:var(--muted);}
-  .ss-presc input{width:52px;height:36px;text-align:center;background:var(--well);border:1px solid var(--line);border-radius:8px;color:var(--text);font-size:15px;}
-  .ss-presc-note{font-size:12px;color:var(--faint);}
+  .sh-block{background:var(--surface);border:1px solid var(--line-soft);border-radius:12px;padding:14px;margin-bottom:12px;}
+  .sh-step{font-family:"Oswald",sans-serif;font-size:12px;letter-spacing:.12em;color:var(--accent);margin-bottom:10px;}
+  .sh-new{border-style:dashed;}
+  .sh-namerow{display:flex;gap:8px;align-items:center;margin-top:10px;}
+  .sh-name{flex:1;height:42px;background:var(--well);border:1px solid var(--line);border-radius:10px;color:var(--text);font-size:16px;padding:0 12px;}
+  .sh-ex{border-top:1px solid var(--line-soft);padding:10px 0;}
+  .sh-step + .sh-ex{border-top:none;}
+  .sh-ex-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+  .sh-ex-name{font-weight:700;font-size:15px;}
+  .sh-ex-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:6px;}
+  .sh-lbl{width:56px;font-size:12px;color:var(--muted);flex:none;}
+  .sh-stepper{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:10px;overflow:hidden;}
+  .sh-stepper button{width:38px;height:38px;background:var(--surface-2);border:none;color:var(--text);font-size:18px;cursor:pointer;}
+  .sh-stepper button:active{background:var(--accent);color:var(--bg);}
+  .sh-stepper span{min-width:36px;text-align:center;font-size:16px;font-variant-numeric:tabular-nums;}
+  .sh-tilde{color:var(--muted);}
+  .sh-note{font-size:12px;color:var(--faint);}
+  .sh-qr{display:flex;justify-content:center;padding:10px 0;background:#fff;border-radius:10px;margin:10px 0;}
+  .sh-url{width:100%;height:40px;background:var(--well);border:1px solid var(--line);border-radius:10px;color:var(--muted);font-size:12px;padding:0 10px;}
+  .sh-actions{display:flex;gap:8px;margin-top:10px;}
+  .sh-actions > *{flex:1;}
+  .pick-search{width:100%;height:42px;margin-bottom:10px;background:var(--well);border:1px solid var(--line);border-radius:10px;color:var(--text);font-size:16px;padding:0 12px;}
 
   @media (prefers-reduced-motion:reduce){
     *{animation:none !important;transition:none !important;}
@@ -520,6 +591,7 @@
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:8px">
+      <button class="help-btn" id="helpBtn" aria-label="使い方">?</button>
       <button class="user-pill" id="feedbackBtn" aria-label="お問い合わせ" style="padding:5px 12px;max-width:none">
         <span class="user-pill-name">お問い合わせ</span>
       </button>
@@ -606,6 +678,12 @@
       </button>
       <div id="orphanBlock"></div>
     </section>
+
+    <!-- ===== SHARE (COACH ONLY) VIEW ===== -->
+    <section class="view" id="view-share">
+      <div class="eyebrow">選手に渡すメニュー</div>
+      <div id="shareTab"></div>
+    </section>
   </main>
 
   <nav>
@@ -620,6 +698,10 @@
     <button class="tab" data-view="split">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
       <span>種目</span>
+    </button>
+    <button class="tab" data-view="share" id="tabShare" style="display:none">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M16 6l-4-4-4 4"/><path d="M12 2v13"/></svg>
+      <span>共有</span>
     </button>
   </nav>
 </div>
@@ -636,9 +718,36 @@
       <label>部位</label>
       <div class="chip-row" id="bodyChips"></div>
     </div>
+    <div class="user-hint" id="exCatalogNote" style="display:none">カタログの種目です。変更はこの端末だけに保存されます。</div>
     <div class="field">
-      <label for="exStep">目安の増量幅 <span class="unit-tag">kg・空欄で自動</span></label>
+      <label>使用する器具</label>
+      <div class="chip-row" id="kindChips">
+        <button class="chip" type="button" data-v="barbell">バーベル</button>
+        <button class="chip" type="button" data-v="dumbbell">ダンベル</button>
+        <button class="chip" type="button" data-v="machine">マシン（ピン式）</button>
+        <button class="chip" type="button" data-v="plate">マシン（プレート式）</button>
+        <button class="chip" type="button" data-v="bodyweight">自重</button>
+        <button class="chip" type="button" data-v="assist">補助</button>
+      </div>
+      <div class="user-hint">ピン式：重りにピンを差して重さを選ぶマシン／プレート式：円盤（プレート）を自分で付けるマシン</div>
+    </div>
+    <div class="field" id="dbCountField" style="display:none">
+      <label>使うダンベルの数</label>
+      <div class="chip-row" id="dbCountChips">
+        <button class="chip sel" type="button" data-v="2">2個（両手）</button>
+        <button class="chip" type="button" data-v="1">1個</button>
+      </div>
+      <div class="user-hint">重さは持った合計で記録します（2個なら1個の重さ×2）。</div>
+    </div>
+    <div class="field" id="startWField">
+      <label for="exStartW">初期の重さ <span class="unit-tag">kg・空欄で器具の目安</span></label>
+      <input type="number" id="exStartW" inputmode="decimal" step="0.5" min="0" placeholder="器具の目安">
+      <div class="user-hint" id="startWHint"></div>
+    </div>
+    <div class="field">
+      <label for="exStep">重さの上げ幅 <span class="unit-tag">kg・空欄で自動</span></label>
       <input type="number" id="exStep" inputmode="decimal" step="0.5" min="0" placeholder="自動">
+      <div class="user-hint">1段階でどれだけ重くするか（例：プレート1枚分）</div>
     </div>
     <div class="field">
       <label>種目タイプ</label>
@@ -659,6 +768,7 @@
       <button class="btn-solid" id="exSave">保存</button>
     </div>
     <button class="ex-archive" id="exArchive" style="display:none"></button>
+    <button class="ex-reset" id="exReset" style="display:none">カタログの設定に戻す</button>
     <button class="ex-delete" id="exDelete" style="display:none">この種目を完全に削除（記録も消えます）</button>
   </div>
 </div>
@@ -695,47 +805,6 @@
   </div>
 </div>
 
-<!-- Coach: manage named share sets (each with its own splits/exercises, independent of data.splits) -->
-<div class="modal-bg" id="shareMenuModal">
-  <div class="modal">
-    <h3>メニューを共有</h3>
-    <div id="shareSetList"></div>
-    <button class="sp-add" id="shareSetAdd">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-      新しい共有を追加
-    </button>
-    <div class="modal-actions"><button class="btn-ghost" id="shareClose">閉じる</button></div>
-  </div>
-</div>
-
-<!-- Coach: edit one share set's own splits/exercises -->
-<div class="modal-bg" id="shareEditModal">
-  <div class="modal">
-    <div class="field">
-      <label for="ssName">共有の名前</label>
-      <input type="text" id="ssName" autocomplete="off">
-    </div>
-    <div id="ssSplitList"></div>
-    <button class="sp-add" id="ssSplitAdd">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-      分割を追加
-    </button>
-    <div class="modal-actions"><button class="btn-solid" id="ssDone">完了</button></div>
-  </div>
-</div>
-
-<!-- Coach: pick catalog/custom exercises into one share-set split -->
-<div class="modal-bg" id="ssExPickModal">
-  <div class="modal">
-    <h3>種目を追加</h3>
-    <div class="field"><select id="ssExPick" multiple size="12" style="width:100%"></select></div>
-    <div class="modal-actions">
-      <button class="btn-ghost" id="ssExPickCancel">キャンセル</button>
-      <button class="btn-solid" id="ssExPickAdd">追加</button>
-    </div>
-  </div>
-</div>
-
 <!-- Import a shared menu -->
 <div class="modal-bg" id="importModal">
   <div class="modal">
@@ -763,6 +832,7 @@
     </div>
     <div class="field">
       <label>既存の種目から選ぶ</label>
+      <input type="search" id="addExSearch" class="pick-search" placeholder="種目名で探す（例：カール）" autocomplete="off">
       <div class="ex-pick" id="addExPick"></div>
     </div>
     <div class="modal-actions">
@@ -829,6 +899,102 @@
     </div>
 
     <button class="btn-primary" id="onboardStart" disabled>はじめる</button>
+  </div>
+</div>
+
+<!-- First-time tutorial (4 cards) -->
+<div class="tut" id="tutorialView" aria-modal="true" role="dialog">
+  <div class="tut-top">
+    <div class="tut-brand">How to use</div>
+    <button class="tut-skip" id="tutSkip">スキップ</button>
+  </div>
+  <div class="tut-track" id="tutTrack">
+    <section class="tut-card">
+      <div class="tut-step">1 / 4</div>
+      <h2>記録は3ステップ</h2>
+      <div class="tut-illust">
+        <div class="tut-flow">
+          <div class="tut-row"><span class="tut-num">1</span><span class="tut-chip sel">胸の日</span><span class="tut-chip">脚の日</span></div>
+          <div class="tut-row"><span class="tut-num">2</span><span class="tut-chip">ベンチプレス</span></div>
+          <div class="tut-row"><span class="tut-num">3</span><span class="tut-chip">40 kg</span><span class="tut-chip">10 回</span></div>
+          <div class="tut-minibtn">セットを記録</div>
+        </div>
+      </div>
+      <p><b>分割を選ぶ → 種目を選ぶ → 重さと回数を入れて「セットを記録」</b>。1セットごとに記録します。</p>
+    </section>
+    <section class="tut-card">
+      <div class="tut-step">2 / 4</div>
+      <h2>次の目安はアプリが出す</h2>
+      <div class="tut-illust">
+        <div class="tut-glabel">次のセットの目安</div>
+        <div class="tut-gmain">42.5<span>kg</span> × 10</div>
+        <div class="tut-gnote">3セットとも10回できたので、1段階アップ</div>
+        <div class="tut-inputs"><div class="tut-inp">42.5<small>kg</small></div><div class="tut-inp">10<small>回</small></div></div>
+      </div>
+      <p>重さと回数の欄には、前回の記録から計算した目安が最初から入っています。マシンによって重さが異なるので、数字はあくまで目安にしてください。<b>種目タブで「初期の重さ」と「重さの上げ幅」を入れておくと、目安が楽に計算できます。</b></p>
+    </section>
+    <section class="tut-card">
+      <div class="tut-step">3 / 4</div>
+      <h2>初めての種目は軽めから</h2>
+      <div class="tut-illust">
+        <div class="tut-kind"><span>バーベル</span><span>バーだけ（20kg）</span></div>
+        <div class="tut-kind"><span>ダンベル</span><span>2kgから</span></div>
+        <div class="tut-kind"><span>マシン（ピン式）</span><span>一番軽い重さ<br><small>男性は3番目に軽い重さ</small></span></div>
+        <div class="tut-kind"><span>マシン（プレート式）</span><span>プレートなし</span></div>
+      </div>
+      <p>初めての種目には、器具ごとの始め方が出ます。まずは軽い重さで、<b>フォームを確認</b>しながら始めましょう。</p>
+    </section>
+    <section class="tut-card">
+      <div class="tut-step">4 / 4</div>
+      <h2>困ったら「？」</h2>
+      <div class="tut-illust">
+        <div class="tut-hdr"><span class="tut-hdr-title">筋トレログ</span><span class="tut-q">?</span></div>
+        <div class="tut-qa re">▶ チュートリアルをもう一度見る</div>
+        <div class="tut-qa">Q. 目安の重さと回数はどうやって決まるの？</div>
+        <div class="tut-qa">Q. 10回に届かなかったらどうする？</div>
+        <div class="tut-qa">Q. 最初の重さがわからない</div>
+      </div>
+      <p>画面の右上の「？」から、使い方のQ&Aをいつでも開けます。このチュートリアルも、そこからもう一度見られます。</p>
+    </section>
+  </div>
+  <div class="tut-bottom">
+    <div class="tut-dots" id="tutDots"><span class="on"></span><span></span><span></span><span></span></div>
+    <button class="btn-primary" id="tutNext">次へ</button>
+  </div>
+</div>
+
+<!-- Usage Q&A -->
+<div class="modal-bg" id="helpModal">
+  <div class="modal help-modal">
+    <h3>使い方</h3>
+    <button class="sp-add" id="helpTutorial">▶ チュートリアルをもう一度見る</button>
+    <div class="help-list">
+      <details><summary>目安の重さと回数はどうやって決まるの？</summary>
+        <p>3セットとも10回できたら、次回は1段階重くします。新しい重さは1セット目から挑戦して、10回に届かなかったら、そのあとのセットは前の重さに戻します。アスリートを選んだ人は、目的に合わせた回数の幅で進みます。</p></details>
+      <details><summary>10回に届かなかったらどうする？</summary>
+        <p>そのあとのセットは前の重さに戻して、10回を目指してください。次回、また新しい重さに挑戦します。無理に回数を合わせる必要はありません。</p></details>
+      <details><summary>「菅野式WP法」って何？</summary>
+        <p>新しい重さで3回続けて前に進めなかったとき、自動で切り替わる進め方です。重さはそのままで8回から始めて、1回ずつ回数を増やしていきます。3セットとも10回できたら、次の重さに進みます。</p></details>
+      <details><summary>最初の重さがわからない</summary>
+        <p>初めての種目には、器具ごとの始め方が出ます（バーベルはバーだけの20kg、ダンベルは2kg、マシンは女性は一番軽い重さ・男性は3番目に軽い重さ、など）。種目タブで「初期の重さ」を入れておけば、その重さから始まります。</p></details>
+      <details><summary>ボリュームが前回より下がった</summary>
+        <p>ボリュームは「重さ×回数」の合計です。重さを上げた直後は回数が減るので、前回より下がることがあります。前回より重いものを持てていれば大丈夫です。</p></details>
+      <details><summary>記録し忘れた・日付を間違えた</summary>
+        <p>履歴タブでその日の「編集」を押すと、セットを足したり日付を変えたりできます。夜中に日付をまたいで続けた場合は、前のセットから1時間以内なら前の日の記録としてまとまります。</p></details>
+      <details><summary>やりたい種目がない・自分の種目を作りたい</summary>
+        <p>種目タブで分割の「編集」→「＋ 種目を追加」→「新しい種目を作る」から作れます。作ったあとに、使用する器具・初期の重さ・重さの上げ幅も設定できます。</p></details>
+      <details><summary>ダンベルの重さはどう入れるの？</summary>
+        <p>持った重さの合計を入れてください。2kgのダンベルを2個なら4kgです。目安は、ジムのダンベルの並び（10kgまでは1kg刻み、その先は2kg刻み）で計算します。</p></details>
+      <details><summary>片側ずつやる種目の回数は？</summary>
+        <p>ワンハンドロウやランジのように左右それぞれ行う種目は、左右を合わせた回数を記録してください。目安の回数も、左右合わせた数で出ます。</p></details>
+      <details><summary>アシストチンニングの数字は何？</summary>
+        <p>補助の重さです。数字が小さいほど、自分の力で持ち上げています。最初は「体重−10kg」くらいから始めて、3セットとも10回できたら補助を1段階減らします。</p></details>
+      <details><summary>コーチからもらったメニューの取り込み方</summary>
+        <p>コーチから届いたリンクを開くか、QRコードを読み取って「取り込む」を押してください。同じ名前の分割や種目はまとめられて、今までの記録は消えません。記録のときにその分割を選ぶと、コーチが決めたセット数と回数で目安が出ます。</p></details>
+      <details><summary>データはどこに保存されるの？ 機種変更したら？</summary>
+        <p>記録はこの端末のブラウザの中にだけ保存されて、ほかの人には見えません。ほかの端末へ移す機能は、今はありません。機種変更やブラウザのデータ削除をすると消えることがあるので、気をつけてください。</p></details>
+    </div>
+    <div class="modal-actions"><button class="btn-ghost" id="helpClose">閉じる</button></div>
   </div>
 </div>
 
@@ -904,39 +1070,39 @@
     { id:"m_chest_press_machine", name:"チェストプレス（マシン）",       body:"胸",   compound:true, kind:"machine" },
     { id:"m_pec_fly_machine",     name:"ペックフライ（マシン）",         body:"胸",   compound:false, kind:"machine" },
     { id:"m_bench_press",         name:"ベンチプレス",                   body:"胸",   compound:true, kind:"barbell" },
-    { id:"m_db_bench_press",      name:"ダンベルベンチプレス",           body:"胸",   compound:true, kind:"dumbbell" },
-    { id:"m_incline_db_press",    name:"インクラインダンベルプレス",     body:"胸",   compound:true, kind:"dumbbell" },
+    { id:"m_db_bench_press",      name:"ダンベルベンチプレス",           body:"胸",   compound:true, kind:"dumbbell", dbCount:2 },
+    { id:"m_incline_db_press",    name:"インクラインダンベルプレス",     body:"胸",   compound:true, kind:"dumbbell", dbCount:2 },
     { id:"m_push_up",             name:"腕立て伏せ（プッシュアップ）",   body:"胸",   compound:true, kind:"bodyweight" },
     // ===== 背中 =====
     { id:"m_lat_pulldown",        name:"ラットプルダウン",               body:"背中", compound:true, kind:"machine" },
     { id:"m_assisted_pullup",     name:"アシストチンニング（懸垂）",     body:"背中", compound:true, kind:"assist" },   // 新規
     { id:"m_seated_row_machine",  name:"シーテッドロウ（マシン）",       body:"背中", compound:true, kind:"machine" },
     { id:"m_cable_row",           name:"ケーブルロウ",                   body:"背中", compound:true, kind:"machine" },
-    { id:"m_one_arm_db_row",      name:"ワンハンドダンベルロウ",         body:"背中", compound:true, unilateral:true, kind:"dumbbell" },
+    { id:"m_one_arm_db_row",      name:"ワンハンドダンベルロウ",         body:"背中", compound:true, unilateral:true, kind:"dumbbell", dbCount:1 },
     { id:"m_back_extension",      name:"バックエクステンション",         body:"背中", compound:false, kind:"bodyweight" },
     // ===== 肩 =====
     { id:"m_shoulder_press_mac",  name:"ショルダープレス（マシン）",     body:"肩",   compound:true, kind:"machine" },
-    { id:"m_db_shoulder_press",   name:"ダンベルショルダープレス",       body:"肩",   compound:true, kind:"dumbbell" },
-    { id:"m_side_raise",          name:"サイドレイズ",                   body:"肩",   compound:false, kind:"dumbbell" },
+    { id:"m_db_shoulder_press",   name:"ダンベルショルダープレス",       body:"肩",   compound:true, kind:"dumbbell", dbCount:2 },
+    { id:"m_side_raise",          name:"サイドレイズ",                   body:"肩",   compound:false, kind:"dumbbell", dbCount:2 },
     { id:"m_rear_delt_machine",   name:"リアデルトフライ（マシン）",     body:"肩",   compound:false, kind:"machine" },   // 新規
     // ===== 脚 =====
     { id:"m_leg_press",           name:"レッグプレス",                   body:"脚",   compound:true, kind:"machine" },
     { id:"m_squat",               name:"スクワット",                     body:"脚",   compound:true, kind:"barbell" },
-    { id:"m_goblet_squat",        name:"ゴブレットスクワット",           body:"脚",   compound:true, kind:"dumbbell" },   // 新規
+    { id:"m_goblet_squat",        name:"ゴブレットスクワット",           body:"脚",   compound:true, kind:"dumbbell", dbCount:1 },   // 新規
     { id:"m_leg_extension",       name:"レッグエクステンション",         body:"脚",   compound:false, kind:"machine" },
     { id:"m_leg_curl",            name:"レッグカール",                   body:"脚",   compound:false, kind:"machine" },
     { id:"m_rdl",                 name:"ルーマニアンデッドリフト",       body:"脚",   compound:true, kind:"barbell" },
-    { id:"m_lunge",               name:"ランジ",                         body:"脚",   compound:true, unilateral:true, kind:"dumbbell" },
+    { id:"m_lunge",               name:"ランジ",                         body:"脚",   compound:true, unilateral:true, kind:"dumbbell", dbCount:2 },
     { id:"m_hip_thrust",          name:"ヒップスラスト",                 body:"脚",   compound:true, kind:"barbell" },
     { id:"m_calf_raise",          name:"カーフレイズ",                   body:"脚",   compound:false, kind:"machine" },
     { id:"m_hip_adduction",       name:"アダクション（内転・マシン）",   body:"脚",   compound:false, kind:"machine" },
     { id:"m_hip_abduction",       name:"アブダクション（外転・マシン）", body:"脚",   compound:false, kind:"machine" },
     // ===== 腕 =====
-    { id:"m_db_curl",             name:"ダンベルカール",                 body:"腕",   compound:false, kind:"dumbbell" },
-    { id:"m_hammer_curl",         name:"ハンマーカール",                 body:"腕",   compound:false, kind:"dumbbell" },
+    { id:"m_db_curl",             name:"ダンベルカール",                 body:"腕",   compound:false, kind:"dumbbell", dbCount:2 },
+    { id:"m_hammer_curl",         name:"ハンマーカール",                 body:"腕",   compound:false, kind:"dumbbell", dbCount:2 },
     { id:"m_triceps_pushdown",    name:"トライセプスプレスダウン",       body:"腕",   compound:false, kind:"machine" },
-    { id:"m_overhead_ext",        name:"オーバーヘッドエクステンション", body:"腕",   compound:false, kind:"dumbbell" },
-    { id:"m_triceps_kickback",    name:"キックバック",                   body:"腕",   compound:false, kind:"dumbbell" },
+    { id:"m_overhead_ext",        name:"オーバーヘッドエクステンション", body:"腕",   compound:false, kind:"dumbbell", dbCount:1 },
+    { id:"m_triceps_kickback",    name:"キックバック",                   body:"腕",   compound:false, kind:"dumbbell", dbCount:1 },
     // ===== 体幹 =====
     { id:"m_crunch",              name:"クランチ",                       body:"体幹", compound:false, kind:"bodyweight" },
     { id:"m_leg_raise",           name:"レッグレイズ",                   body:"体幹", compound:false, kind:"bodyweight" },
@@ -970,8 +1136,19 @@
     { id:"m_ab_wheel",            name:"アブローラー",                   body:"体幹", compound:false, retired:true },
     { id:"m_russian_twist",       name:"ロシアンツイスト",               body:"体幹", compound:false, retired:true },
   ];
-  function getExercise(id){ return data.exercises.find(e=>e.id===id) || MASTER_EXERCISES.find(e=>e.id===id) || null; }
-  function allExercises(){ return [...MASTER_EXERCISES, ...data.exercises]; }
+  // data.exPrefs = { [exId]: { name?, body?, kind?, dbCount?, compound?, unilateral?, step?, startW?, archived? } }
+  // カタログ種目へのこの端末だけの上書き。カタログ本体（MASTER_EXERCISES）は変えない。
+  function getExercise(id){
+    const own = data.exercises.find(e => e.id === id);
+    if(own) return own;
+    const m = MASTER_EXERCISES.find(e => e.id === id);
+    if(!m) return null;
+    const p = data.exPrefs && data.exPrefs[id];
+    return p ? { ...m, ...p, id: m.id, retired: m.retired } : m;   // id と retired はカタログの値のまま
+  }
+  function allExercises(){ return [...MASTER_EXERCISES.map(m => getExercise(m.id)), ...data.exercises]; }
+  // 初期の重さ（firstGuide で使う）
+  function exStartW(exId){ const e = getExercise(exId); return (e && typeof e.startW === "number") ? e.startW : null; }
   // この端末（現在のプロフィール）で使っている種目ID：記録がある or どれかの分割に入っている
   function myUsedIds(){
     const u = new Set(data.sets.map(s => s.exId));
@@ -1004,8 +1181,15 @@
       v: 1,
       name: ss.name,                                    // 選手側の取り込み確認にも表示する共有名
       e: exList.map(e=> isMaster(e.id)
-        ? { mid: e.id }
-        : Object.assign({ n:e.name, b:e.body, cmp: e.compound!==false, uni: !!e.unilateral }, e.step!=null ? {st:e.step} : null)
+        ? Object.assign({ mid: e.id },
+            (() => { const p = data.exPrefs[e.id] || {}, o = {};
+                     if(p.kind) o.k = p.kind; if(p.dbCount) o.dc = p.dbCount;
+                     if(p.step != null) o.st = p.step; if(p.startW != null) o.sw = p.startW; return o; })())
+        : Object.assign({ n:e.name, b:e.body, cmp: e.compound!==false, uni: !!e.unilateral },
+            e.step!=null ? {st:e.step} : null,
+            e.kind ? {k:e.kind} : null,
+            e.dbCount ? {dc:e.dbCount} : null,
+            e.startW!=null ? {sw:e.startW} : null)
       ),
       s: ss.splits.map(sp=> ({
         n: sp.name,
@@ -1029,7 +1213,7 @@
   }
 
   // ---- state ----
-  let data = { exercises:[], sets:[], splits:[], shareSets:[] };
+  let data = { exercises:[], sets:[], splits:[], shareSets:[], exPrefs:{} };
   let meta = { users:[], currentUserId:null };
   let editingExId = null;
   let selectedBody = "胸";
@@ -1124,6 +1308,7 @@
     if(!Array.isArray(d.sets)) d.sets = [];
     if(!Array.isArray(d.splits)) d.splits = [];
     if(!Array.isArray(d.shareSets)) d.shareSets = [];
+    if(!d.exPrefs || typeof d.exPrefs !== "object") d.exPrefs = {};
     return d;
   }
 
@@ -1238,6 +1423,28 @@
       input.addEventListener("keydown", e=>{ if(e.key==="Enter") submit(); });
     });
   }
+
+  // ---- first-time tutorial (4 swipeable cards) ----
+  function openTutorial(){
+    const v = document.getElementById("tutorialView"), t = document.getElementById("tutTrack");
+    v.classList.add("open");
+    t.style.scrollBehavior = "auto"; t.scrollLeft = 0; t.style.scrollBehavior = "";
+    updateTutorial();
+  }
+  async function closeTutorial(){
+    document.getElementById("tutorialView").classList.remove("open");
+    if(!meta.tutorialSeen){ meta.tutorialSeen = true; await saveMeta(); }
+  }
+  function tutIndex(){ const t = document.getElementById("tutTrack"); return Math.round(t.scrollLeft / t.clientWidth); }
+  function updateTutorial(){
+    const i = tutIndex(), dots = document.querySelectorAll("#tutDots span");
+    dots.forEach((d, k) => d.classList.toggle("on", k === i));
+    document.getElementById("tutNext").textContent = (i === dots.length - 1) ? "はじめる" : "次へ";
+  }
+
+  // ---- usage Q&A ----
+  const openHelp  = () => document.getElementById("helpModal").classList.add("open");
+  const closeHelp = () => document.getElementById("helpModal").classList.remove("open");
 
   async function loadMeta(){
     const raw = await sGet(MKEY);
@@ -1474,6 +1681,21 @@
     const step=g/100;
     return (step>=0.5 && step<=10) ? step : null;
   }
+  // 記録がまだないときの、器具ごとの刻みの既定値
+  const DEFAULT_STEP = { barbell:2.5, machine:5, plate:5, assist:5 };
+  // ダンベル1個の重さを並び（1〜10kgは1kg刻み、その先は2kg刻み）に合わせる／1つ上／1つ下
+  function dbPerSnap(p){ if(p <= 1) return 1; if(p <= 10) return Math.round(p); return Math.max(12, Math.round(p/2)*2); }
+  function dbPerUp(p){   p = dbPerSnap(p); return p < 10 ? p + 1 : (p === 10 ? 12 : p + 2); }
+  function dbPerDown(p){ p = dbPerSnap(p); return p <= 1 ? 1 : (p <= 10 ? p - 1 : (p === 12 ? 10 : p - 2)); }
+  // 種目ごとの「1段階上・1段階下・丸め」。ダンベルは並びで、それ以外は従来どおり固定刻みで計算する。
+  function weightLadder(exId, step){
+    const e = getExercise(exId);
+    if(e && e.kind === "dumbbell"){
+      const c = e.dbCount || 2;                         // 記録は合計なので個数を掛ける
+      return { up: w => c * dbPerUp(w / c), down: w => c * dbPerDown(w / c), snap: w => c * dbPerSnap(w / c) };
+    }
+    return { up: w => roundW(w + step), down: w => roundW(w - step), snap: w => snapStep(w, step) };
+  }
   // ---- 目安ロジック（一般の方: 3×10法＋菅野式WP法 ／ アスリート: 目的×段階式） ----
   function isAthlete(){ return !!(data.profile && data.profile.type === "athlete"); }
   // 旧データ移行: purposeが無く period がある場合 → hypertrophy/strengthはそのまま、power→strength
@@ -1534,19 +1756,19 @@
   }
 
   // 3×10法: 前回の「新重量」と「下げ先（旧重量）」を決め、今日すでに記録したセットの結果で後続セットをその場で下げる
-  function lpTargets(prev, step, high, n, done){
+  function lpTargets(prev, L, high, n, done){
     const W = prev.sets.map(s=>s.weight);
     const top = Math.max(...W), bottom = Math.min(...W);
     const topHits = prev.sets.filter(s=>s.weight===top && s.reps>=high).length;
     let newW, backW;
     if(top === bottom){
-      if(topHits >= n){ newW = top + step; backW = top; }      // 全セット達成 → 次の重量へ
-      else            { newW = top;        backW = top - step; } // 同重量で未達 → 同重量に再挑戦（下げ先は1段階下）
+      if(topHits >= n){ newW = L.up(top); backW = top; }      // 全セット達成 → 次の重量へ
+      else            { newW = top;       backW = L.down(top); } // 同重量で未達 → 同重量に再挑戦（下げ先は1段階下）
     } else {
       newW = top; backW = bottom;                               // 繰り上げ途中 → 新重量に再挑戦、下げ先は旧重量
     }
-    newW  = snapStep(newW, step);
-    backW = snapStep(Math.max(backW, 0), step);
+    newW  = L.snap(newW);
+    backW = L.snap(backW);   // 0で丸めない（補助種目は反転中でマイナス。0クランプはplanForで向きを戻した後にだけ行う）
     const out = [];
     let backed = false;
     for(let i=0; i<n; i++){
@@ -1560,7 +1782,7 @@
   }
 
   // 菅野式WP法: その重量で8,8,8から始め、左隣より少ない最初のセット（全部そろっていたら1セット目）を+1ずつ積む
-  function wpTargets(prev, step, low, high, n, wpW, fresh){
+  function wpTargets(prev, L, low, high, n, wpW, fresh){
     let R;
     if(fresh){
       R = Array(n).fill(low);                                   // WPに入った直後は 8,8,8 から
@@ -1574,7 +1796,7 @@
       if(pos === -1) pos = 0;                                            // 全部そろっていたら1セット目
       if(R[pos] < high) R[pos]++;
     }
-    return R.map(r => ({ weight: snapStep(wpW, step), reps:r, why:"wp", mode:"wp" }));
+    return R.map(r => ({ weight: L.snap(wpW), reps:r, why:"wp", mode:"wp" }));
   }
 
   // アスリート用: 前回の記録から20%以上ボリュームが落ちた日（体調不良など）は目安の基準から外す
@@ -1587,15 +1809,15 @@
     return list.length ? list.length-1 : -1;
   }
   // アスリート用（段階式）: 全セットで上限に届いたら1セット目から重量を繰り上げ、下限割れで1段階下げる
-  function planTargets(prev, step, low, high, nSess, fixedN){
+  function planTargets(prev, L, low, high, nSess, fixedN){
     const srcW = prev.sets.map(s=>s.weight), srcR = prev.sets.map(s=>s.reps);
     const n = fixedN || srcW.length || 3;
     const W = Array.from({length:n}, (_,i)=> srcW[i] ?? srcW[srcW.length-1] ?? 0);
     const R = Array.from({length:n}, (_,i)=> srcR[i] ?? srcR[srcR.length-1] ?? 0);
     const Wlow = Math.min(...W), Whigh = Math.max(...W);
     const lead = (nSess < 3) ? 2 : 1;                 // 始めたては2セットずつ繰り上げ
-    const mk = (w, why="same") => ({ weight: snapStep(w, step), reps: high, low, high, why, mode:"range" });
-    const stepUp = base => Array.from({length:n}, (_,i)=> i<lead ? mk(base+step,"up") : mk(base));
+    const mk = (w, why="same") => ({ weight: L.snap(w), reps: high, low, high, why, mode:"range" });
+    const stepUp = base => Array.from({length:n}, (_,i)=> i<lead ? mk(L.up(base),"up") : mk(base));
     const hitHigh = i => R[i] >= high, belowLow = i => R[i] < low;
     if(Whigh > Wlow){
       const leadIdx = W.map((w,i)=>({w,i})).filter(o=>o.w===Whigh).map(o=>o.i);
@@ -1608,7 +1830,7 @@
       return Array.from({length:n}, (_,i)=> mk(W[i]));
     } else {
       const W0 = Wlow;
-      if(R.some((_,i)=>belowLow(i)))  return Array.from({length:n}, ()=> mk(roundW(W0-step), "down"));
+      if(R.some((_,i)=>belowLow(i)))  return Array.from({length:n}, ()=> mk(L.down(W0), "down"));
       if(R.every((_,i)=>hitHigh(i)) && prev.sets.length>=Math.min(n,3)) return stepUp(W0);
       return Array.from({length:n}, ()=> mk(W0));
     }
@@ -1637,8 +1859,10 @@
   // full plan for today: one target per set of the previous session
   function planFor(exId){
     const ex = getExercise(exId);
-    const step = (ex && typeof ex.step==="number") ? ex.step : (inferStep(exId) ?? 2.5);
     const k = exKind(exId);
+    const step = (ex && typeof ex.step==="number") ? ex.step
+               : (k === "dumbbell" ? null : inferStep(exId)) ?? DEFAULT_STEP[k] ?? 2.5;
+    const L = weightLadder(exId, step);
     const presc = (typeof activePlan === "function") ? activePlan(exId) : null;   // 共有セットの処方（あれば）
     const [low, high] = presc ? [presc.low, presc.high] : repRange(exId);
     const list = pastSessionsList(exId);
@@ -1667,7 +1891,7 @@
         const bi = targetBasisIndex(list);
         const base = bi >= 0 ? list[bi] : prev;
         const baseF = { ...base, sets: base.sets.map(flip) };
-        targets = planTargets(baseF, step, low, high, list.length, presc ? presc.sets : null)
+        targets = planTargets(baseF, L, low, high, list.length, presc ? presc.sets : null)
                     .map(t => ({ ...t, weight: Math.max(0, sgn * t.weight) }));
         mode = "range";
       } else {
@@ -1675,8 +1899,8 @@
         const doneF = done.map(flip);
         const st = progState(exId, high, n, sgn);
         targets = (st.mode === "wp")
-          ? wpTargets(prevF, step, low, high, n, st.wpW, st.wpFresh)
-          : lpTargets(prevF, step, high, n, doneF);
+          ? wpTargets(prevF, L, low, high, n, st.wpW, st.wpFresh)
+          : lpTargets(prevF, L, high, n, doneF);
         targets = targets.map(t => ({ ...t,
           weight: Math.max(0, sgn * t.weight),
           newW:  t.newW  != null ? Math.max(0, sgn * t.newW)  : t.newW,
@@ -1710,7 +1934,13 @@
   }
   // ---- 種目タイプ別の始め方（初回ガイド） ----
   function firstGuide(exId){
+    const e = getExercise(exId);
     const k = exKind(exId);
+    if(e && typeof e.startW === "number" && k !== "bodyweight"){
+      const tail = isFreeWeight(k) ? "今日は全セット同じ重さで。" : "";
+      const what = (k === "assist") ? "補助" : "重さ";
+      return { text:`最初の${what}は ${fmtW(e.startW)}kg から始めましょう。${tail}`, w: e.startW };
+    }
     const g = (data.profile && data.profile.gender) || "unspecified";
     switch(k){
       case "barbell":
@@ -1719,8 +1949,14 @@
         return g === "male"
           ? { text:"3番目に軽い重さから始めましょう。選んだ重さの数字を入力してください。", w:"" }
           : { text:"一番軽い重さから始めましょう。選んだ重さの数字を入力してください。", w:"" };
-      case "dumbbell":
-        return { text:"2kgから始めましょう。今日は全セット2kgで。", w:2 };
+      case "plate":
+        return { text:"プレートを付けずに、マシンだけで始めましょう。重さは付けたプレートの合計で記録します（何も付けなければ0kg）。", w:0 };
+      case "dumbbell": {
+        const c = (e || {}).dbCount || 2;
+        return c === 2
+          ? { text:"2kgのダンベルを2個（合計4kg）から始めましょう。重さは持った合計で記録します。今日は全セット同じ重さで。", w:4 }
+          : { text:"2kgのダンベル1個から始めましょう。今日は全セット同じ重さで。", w:2 };
+      }
       case "bodyweight":
         return { text:"自重の種目です。重量は0のまま、できた回数を記録してください（目安10回）。", w:0 };
       case "assist":
@@ -1733,7 +1969,8 @@
   function firstDayNote(exId, doneCount){
     if(doneCount !== 1) return "";
     const k = exKind(exId);
-    if(k === "machine")    return "あと10回できそうなら、次のセットは1段階（次のプレート）上げましょう。きつければ同じ重さで。";
+    if(k === "machine")    return "あと10回できそうなら、次のセットはピンを1つ下に差して1段階上げましょう。きつければ同じ重さで。";
+    if(k === "plate")      return "あと10回できそうなら、次のセットはプレートを足して1段階上げましょう。きつければ同じ重さで。";
     if(k === "assist")     return "あと10回できそうなら、次のセットは補助を1段階減らしましょう。きつければ同じ補助で。";
     if(isFreeWeight(k))    return "今日は重さを変えず、全セット同じ重さで行いましょう。";
     return "";
@@ -2403,9 +2640,7 @@
         </div>`;
         removeBtn = `<button class="icon-btn sm" data-unlink="${e.id}" data-sp="${splitId}" aria-label="この分割から外す">${MINUS}</button>`;
       }
-      if(!isMaster(e.id)){
-        editBtn = `<button class="icon-btn sm" style="color:var(--muted)" data-editex="${e.id}" aria-label="名前を変更">${EDIT}</button>`;
-      }
+      editBtn = `<button class="icon-btn sm" style="color:var(--muted)" data-editex="${e.id}" aria-label="種目を編集">${EDIT}</button>`;
     }
     return `<div class="sp-ex">
       ${order}
@@ -2424,12 +2659,6 @@
       wrap.innerHTML=`<div class="empty"><div class="big">分割がありません</div><p>まず「プッシュ」「脚の日」などの分割を作り、その中に種目を追加していきます。</p></div>`;
     } else {
       let html="";
-      if(data.profile && data.profile.coach){
-        html += `<button class="sp-add" data-sharemenu style="margin-bottom:12px">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7M16 6l-4-4-4 4M12 2v13"/></svg>
-          メニューを共有
-        </button>`;
-      }
       data.splits.forEach(s=>{
         const editing = editModeSplit===s.id;
         const exs=s.exIds.map(id=>getExercise(id)).filter(Boolean);
@@ -2471,176 +2700,201 @@
     for(let i=0;i<30;i++){ const nm = "共有"+(CIRCLED[i]||(i+1)); if(!data.shareSets.some(s=>s.name===nm)) return nm; }
     return "共有"+uid().slice(0,4);
   }
-  function openShareModal(){ renderShareSets(); document.getElementById("shareMenuModal").classList.add("open"); }
-  function closeShareModal(){ document.getElementById("shareMenuModal").classList.remove("open"); }
-  function renderShareSets(){
-    const wrap = document.getElementById("shareSetList");
-    if(!data.shareSets.length){
-      wrap.innerHTML = `<div class="split-empty-note">まだ共有がありません。「新しい共有を追加」から作成してください。</div>`;
-      return;
-    }
-    wrap.innerHTML = data.shareSets.map(ss=>{
-      const nSplit = ss.splits.length;
-      const nEx = new Set(ss.splits.flatMap(s=>s.exIds)).size;
-      const url = encodeShareSet(ss);
-      return `<div class="split-item">
-        <div class="split-item-head">
-          <input type="text" class="num" data-ss-name="${ss.id}" value="${escapeHtml(ss.name)}" style="flex:1;font-size:15px;font-weight:700">
-          <span class="sp-count">${nSplit}分割 ・ ${nEx}種目</span>
-          <button class="icon-btn sm" style="color:var(--muted)" data-ss-edit="${ss.id}" aria-label="編集">${EDIT}</button>
-          <button class="icon-btn sm" data-ss-del="${ss.id}" aria-label="削除">${TRASH}</button>
-        </div>
-        <input type="text" class="num" readonly style="font-size:12px;width:100%" value="${url}">
-        <div style="display:flex;justify-content:center;padding:6px 0" data-ss-qr="${ss.id}"></div>
-        <button class="sp-add" data-ss-copy="${ss.id}">リンクをコピー</button>
-      </div>`;
-    }).join("");
-    // QR描画（innerHTMLに埋められないので後から）
-    data.shareSets.forEach(ss=>{
-      const box = wrap.querySelector(`[data-ss-qr="${ss.id}"]`); if(!box) return;
-      const url = encodeShareSet(ss);
-      try{ const q = qrcode(0,"L"); q.addData(url); q.make(); box.innerHTML = q.createImgTag(4,8); }
-      catch(_){ box.innerHTML = `<span class="user-hint">メニューが大きすぎてQRにできません。リンクを使ってください。</span>`; }
-    });
-  }
-  async function addShareSet(){
-    const ss = { id: uid(), name: nextShareName(), splits: [] };
-    data.shareSets.push(ss);
-    await save();
-    openShareEditor(ss.id);      // 作ったらすぐ編集へ
-  }
-  async function delShareSet(id){
-    const ss = data.shareSets.find(s=>s.id===id);
-    if(ss && !confirm(`「${ss.name}」を削除しますか？`)) return;
-    data.shareSets = data.shareSets.filter(s=>s.id!==id);
-    await save(); renderShareSets();
-  }
-
-  // ---- share-set editor: this share set's own splits/exercises (data.splits is never touched here) ----
-  let editingShareId = null;
-  function curShare(){ return data.shareSets.find(s=>s.id===editingShareId); }
-  function openShareEditor(id){
-    editingShareId = id;
-    const ss = curShare(); if(!ss) return;
-    document.getElementById("ssName").value = ss.name;
-    renderShareEditor();
-    document.getElementById("shareEditModal").classList.add("open");
-  }
-  function closeShareEditor(){
-    document.getElementById("shareEditModal").classList.remove("open");
-    editingShareId = null;
-    renderShareSets();            // 一覧（リンク/QR）を更新
-  }
   // 共有セットの種目に指定が無いときの既定値（コーチ自身の一般／アスリート設定に左右されない固定値）
   function defaultPresc(exId){
     const e = getExercise(exId);
     const m = (e && e.unilateral) ? 2 : 1;
     return { sets:3, low:8*m, high:10*m };
   }
-  function renderShareEditor(){
-    const ss = curShare(); if(!ss) return;
-    const wrap = document.getElementById("ssSplitList");
-    wrap.innerHTML = ss.splits.map(sp=>{
-      const exRows = sp.exIds.map(exId=>{
-        const e = getExercise(exId);
-        const p = (sp.plan && sp.plan[exId]) || defaultPresc(exId);
-        const bw = e && e.kind === "bodyweight";
-        return `<div class="sp-ex" style="flex-wrap:wrap">
-          <div class="sp-ex-body"><div class="sp-ex-name">${e?escapeHtml(e.name):"(削除された種目)"}</div></div>
-          <button class="icon-btn sm" data-ssex-del="${sp.id}:${exId}" aria-label="外す">${MINUS}</button>
-          <div class="ss-presc">
-            <input type="number" inputmode="numeric" min="1" max="10" value="${p.sets}" data-ssp="sets" data-sspk="${sp.id}:${exId}">
-            <span>セット ×</span>
-            ${bw ? `<span class="ss-presc-note">回数は前回から1回ずつ増やす</span>` : `
-            <input type="number" inputmode="numeric" min="1" max="100" value="${p.low}"  data-ssp="low"  data-sspk="${sp.id}:${exId}">
-            <span>〜</span>
-            <input type="number" inputmode="numeric" min="1" max="100" value="${p.high}" data-ssp="high" data-sspk="${sp.id}:${exId}">
-            <span>回</span>`}
-          </div>
-        </div>`;
-      }).join("") || `<div class="split-empty-note">種目がありません。下の＋から追加。</div>`;
-      return `<div class="split-item editing">
-        <div class="split-item-head">
-          <input type="text" class="num" data-sssplit-name="${sp.id}" value="${escapeHtml(sp.name)}" style="flex:1;font-size:14px">
-          <button class="icon-btn sm" data-sssplit-del="${sp.id}" aria-label="分割を削除">${TRASH}</button>
-        </div>
-        ${exRows}
-        <button class="sp-add" data-ssex-add="${sp.id}">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-          種目を追加
-        </button>
-      </div>`;
-    }).join("");
-  }
-  async function ssAddSplit(){
-    const ss = curShare(); if(!ss) return;
-    ss.splits.push({ id: uid(), name: "分割"+(ss.splits.length+1), exIds: [] });
-    await save(); renderShareEditor();
-  }
-  async function ssDelSplit(spId){
-    const ss = curShare(); if(!ss) return;
-    ss.splits = ss.splits.filter(s=>s.id!==spId);
-    await save(); renderShareEditor();
-  }
-  async function ssRenameSplit(spId, name){
-    const ss = curShare(); const sp = ss && ss.splits.find(s=>s.id===spId);
-    if(sp){ sp.name = name; await save(); }
-  }
-  async function ssRemoveEx(spId, exId){
-    const ss = curShare(); const sp = ss && ss.splits.find(s=>s.id===spId);
-    if(sp){
-      sp.exIds = sp.exIds.filter(x=>x!==exId);
-      if(sp.plan) delete sp.plan[exId];
-      await save(); renderShareEditor();
-    }
-  }
-  async function ssRenameSet(name){
-    const ss = curShare(); if(ss){ ss.name = name.trim()||ss.name; await save(); }
-  }
-  function ssSetPresc(spId, exId, field, val){
-    const ss = curShare(); const sp = ss && ss.splits.find(s=>s.id===spId);
-    if(!sp) return;
-    sp.plan = sp.plan || {};
-    if(!sp.plan[exId]) sp.plan[exId] = defaultPresc(exId);
-    const n = parseInt(val, 10);
-    if(isNaN(n) || n <= 0) return;
-    sp.plan[exId][field] = n;
-    const p = sp.plan[exId];
-    if(p.high < p.low) p.high = p.low;   // 上限が下限より小さくならないように
-    save();
+  function isCoach(){ return !!(data.profile && data.profile.coach); }
+  function updateShareTab(){
+    const t = document.getElementById("tabShare");
+    t.style.display = isCoach() ? "" : "none";
+    if(!isCoach() && document.getElementById("view-share").classList.contains("active")) switchView("log");
   }
 
-  // ---- picker: add catalog/custom exercises into one share-set split ----
-  let ssPickSplitId = null;
-  function openSsExPick(spId){
-    ssPickSplitId = spId;
-    const byBody = {};
-    pickableExercises().forEach(e=>{ (byBody[e.body]=byBody[e.body]||[]).push(e); });
-    let html = "";
-    BODYPARTS.forEach(b=>{ if(byBody[b]) html += `<optgroup label="${b}">`+byBody[b].map(e=>`<option value="${e.id}">${escapeHtml(e.name)}</option>`).join("")+`</optgroup>`; });
-    document.getElementById("ssExPick").innerHTML = html;
-    document.getElementById("ssExPickModal").classList.add("open");
-  }
-  function closeSsExPick(){ document.getElementById("ssExPickModal").classList.remove("open"); ssPickSplitId=null; }
-  async function ssExPickAdd(){
-    const ss = curShare(); const sp = ss && ss.splits.find(s=>s.id===ssPickSplitId);
-    if(sp){
-      [...document.getElementById("ssExPick").selectedOptions].forEach(o=>{ if(!sp.exIds.includes(o.value)) sp.exIds.push(o.value); });
-      await save(); renderShareEditor();
+  // ---- share tab: build a menu top-to-bottom (name -> split -> exercises -> QR/link) ----
+  let shareSelId = null, shareSplitSelId = null;   // 今選んでいる共有・分割
+
+  function selShare(){ return data.shareSets.find(s => s.id === shareSelId) || null; }
+  function selShareSplit(){ const ss = selShare(); return ss ? (ss.splits.find(x => x.id === shareSplitSelId) || null) : null; }
+
+  function renderShareTab(){
+    const wrap = document.getElementById("shareTab");
+    const sets = data.shareSets;
+    if(!sets.length){
+      wrap.innerHTML = `<div class="empty"><div class="big">まだ共有がありません</div><p>選手に渡すメニューを作りましょう。</p></div>
+        <button class="add-ex-btn" data-sh="new-set">＋ 新しい共有を作る</button>`;
+      return;
     }
-    closeSsExPick();
+    if(!sets.some(s => s.id === shareSelId)) shareSelId = sets[0].id;
+    const ss = selShare();
+    if(!ss.splits.some(x => x.id === shareSplitSelId)) shareSplitSelId = ss.splits[0] ? ss.splits[0].id : null;
+    const sp = selShareSplit();
+    let h = "";
+
+    // 1. 共有名
+    h += `<div class="sh-block"><div class="sh-step">1. 共有名</div>
+      <div class="split-chips">
+        ${sets.map(s => `<button class="split-chip ${s.id===ss.id?"sel":""}" data-sh="pick-set" data-id="${s.id}">${escapeHtml(s.name)}</button>`).join("")}
+        <button class="split-chip sh-new" data-sh="new-set">＋ 新規</button>
+      </div>
+      <div class="sh-namerow">
+        <input type="text" class="sh-name" data-sh-name="set" value="${escapeHtml(ss.name)}" maxlength="30" placeholder="共有名（例：田中くん用）">
+        <button class="icon-btn" data-sh="del-set" aria-label="この共有を削除">${TRASH}</button>
+      </div></div>`;
+
+    // 2. 分割
+    h += `<div class="sh-block"><div class="sh-step">2. 分割</div>
+      <div class="split-chips">
+        ${ss.splits.map(x => `<button class="split-chip ${x.id===shareSplitSelId?"sel":""}" data-sh="pick-split" data-id="${x.id}">${escapeHtml(x.name)}</button>`).join("")}
+        <button class="split-chip sh-new" data-sh="new-split">＋ 分割</button>
+      </div>
+      ${sp ? `<div class="sh-namerow">
+        <input type="text" class="sh-name" data-sh-name="split" value="${escapeHtml(sp.name)}" maxlength="30" placeholder="分割名（例：胸の日）">
+        <button class="icon-btn" data-sh="del-split" aria-label="この分割を削除">${TRASH}</button>
+      </div>` : `<div class="split-empty-note">「＋ 分割」から、胸の日・脚の日などを作ります。</div>`}
+    </div>`;
+
+    // 3. 種目とセット数・回数
+    if(sp){
+      h += `<div class="sh-block"><div class="sh-step">3. 種目とセット数・回数</div>
+        ${sp.exIds.length ? sp.exIds.map(id => shExRow(sp, id)).join("") : `<div class="split-empty-note">まだ種目がありません。</div>`}
+        <button class="sp-add" data-sh="add-ex">＋ 種目を追加</button>
+      </div>`;
+    }
+
+    // 4. 選手に渡す（QR・リンク）
+    const nEx = new Set(ss.splits.flatMap(x => x.exIds)).size;
+    const url = nEx ? encodeShareSet(ss) : "";
+    h += `<div class="sh-block"><div class="sh-step">4. 選手に渡す</div>
+      ${nEx ? `<div class="user-hint">「${escapeHtml(ss.name)}」の ${ss.splits.length}分割・${nEx}種目 がまとめて入ります。</div>
+        <div class="sh-qr" id="shQr"></div>
+        <input type="text" class="sh-url" readonly value="${url}">
+        <div class="sh-actions">
+          <button class="btn-ghost" data-sh="copy">リンクをコピー</button>
+          ${navigator.share ? `<button class="btn-solid" data-sh="share">共有する</button>` : ""}
+        </div>`
+      : `<div class="split-empty-note">種目を入れると、ここにQRコードとリンクが出ます。</div>`}
+    </div>`;
+
+    wrap.innerHTML = h;
+    if(nEx){
+      const box = document.getElementById("shQr");
+      try{ const q = qrcode(0, "L"); q.addData(url); q.make(); box.innerHTML = q.createImgTag(5, 8); }
+      catch(_){ box.innerHTML = `<span class="user-hint">メニューが大きすぎてQRにできません。リンクを使ってください。</span>`; }
+    }
+  }
+
+  // 種目1つ分のカード：名前＋セット数・回数の ＋／− ボタン
+  function shExRow(sp, id){
+    const e = getExercise(id);
+    const p = (sp.plan && sp.plan[id]) || defaultPresc(id);
+    const bw = e && e.kind === "bodyweight";
+    const st = (f, v) => `<div class="sh-stepper">
+        <button type="button" data-sh="step" data-f="${f}" data-d="-1" data-id="${id}" aria-label="減らす">−</button>
+        <span class="num">${v}</span>
+        <button type="button" data-sh="step" data-f="${f}" data-d="1" data-id="${id}" aria-label="増やす">＋</button>
+      </div>`;
+    return `<div class="sh-ex">
+      <div class="sh-ex-head">
+        <div class="sh-ex-name">${e ? escapeHtml(e.name) : "(削除された種目)"}</div>
+        <button class="icon-btn sm" data-sh="rm-ex" data-id="${id}" aria-label="外す">${MINUS}</button>
+      </div>
+      <div class="sh-ex-row"><span class="sh-lbl">セット数</span>${st("sets", p.sets)}</div>
+      ${bw ? `<div class="sh-ex-row"><span class="sh-lbl">回数</span><span class="sh-note">前回から1回ずつ増やす</span></div>`
+           : `<div class="sh-ex-row"><span class="sh-lbl">回数</span>${st("low", p.low)}<span class="sh-tilde">〜</span>${st("high", p.high)}</div>`}
+    </div>`;
+  }
+
+  async function shAction(a, el){
+    const ss = selShare(), sp = selShareSplit();
+    switch(a){
+      case "new-set": {
+        const s = { id: uid(), name: nextShareName(), splits: [{ id: uid(), name: "分割1", exIds: [], plan: {} }] };
+        data.shareSets.push(s); shareSelId = s.id; shareSplitSelId = s.splits[0].id;  // 作ったらすぐ種目を入れられるよう分割を1つ作っておく
+        break;
+      }
+      case "pick-set":   shareSelId = el.dataset.id; shareSplitSelId = null; break;
+      case "del-set":
+        if(!ss || !confirm(`「${ss.name}」を削除しますか？`)) return;
+        data.shareSets = data.shareSets.filter(s => s.id !== ss.id); shareSelId = null; break;
+      case "new-split": {
+        const x = { id: uid(), name: "分割" + (ss.splits.length + 1), exIds: [], plan: {} };
+        ss.splits.push(x); shareSplitSelId = x.id; break;
+      }
+      case "pick-split": shareSplitSelId = el.dataset.id; break;
+      case "del-split":
+        if(!sp || !confirm(`「${sp.name}」を削除しますか？`)) return;
+        ss.splits = ss.splits.filter(x => x.id !== sp.id); shareSplitSelId = null; break;
+      case "add-ex":     openAddExSheet({ kind:"share", shareId: ss.id, splitId: sp.id }); return;   // 分割の種目追加と同じ画面
+      case "rm-ex":
+        sp.exIds = sp.exIds.filter(x => x !== el.dataset.id);
+        if(sp.plan) delete sp.plan[el.dataset.id];
+        break;
+      case "step": {
+        const id = el.dataset.id, f = el.dataset.f, d = parseInt(el.dataset.d, 10);
+        sp.plan = sp.plan || {};
+        if(!sp.plan[id]) sp.plan[id] = defaultPresc(id);
+        const p = sp.plan[id];
+        const lim = { sets:[1,10], low:[1,100], high:[1,100] }[f];
+        p[f] = Math.min(lim[1], Math.max(lim[0], p[f] + d));
+        if(f === "low"  && p.high < p.low) p.high = p.low;    // 下限を上げて上限を超えたら、上限も合わせる
+        if(f === "high" && p.high < p.low) p.low  = p.high;   // 上限を下げて下限を下回ったら、下限も合わせる
+        break;
+      }
+      case "copy": {
+        const url = document.querySelector("#shareTab .sh-url").value;
+        try{ await navigator.clipboard.writeText(url); }
+        catch(_){ const i = document.querySelector("#shareTab .sh-url"); i.select(); document.execCommand("copy"); }
+        toast("リンクをコピーしました"); return;
+      }
+      case "share": {
+        const url = document.querySelector("#shareTab .sh-url").value;
+        try{ await navigator.share({ title: ss.name, text: `「${ss.name}」のトレーニングメニュー`, url }); }catch(_){}
+        return;
+      }
+    }
+    await save();
+    renderShareTab();
+  }
+
+  // 名前の変更: 入力中は再描画しない（キーボードが閉じないように）。確定（change）したらチップの表示を更新。
+  function shRename(kind, val){
+    const v = val.trim(); if(!v) return;
+    if(kind === "set"){ const ss = selShare(); if(ss) ss.name = v; }
+    else { const sp = selShareSplit(); if(sp) sp.name = v; }
+    save();
   }
 
   // ---- import a shared menu (additive, same-name merge keeps history) ----
   async function importMenu(p){
     const realExId = p.e.map(pe=>{
-      if(pe.mid) return isMaster(pe.mid) ? pe.mid : null; // カタログのIDをそのまま使う（新規作成しない）
+      if(pe.mid){
+        if(!isMaster(pe.mid)) return null;
+        const add = {};
+        if(pe.k) add.kind = pe.k; if(pe.dc) add.dbCount = pe.dc;
+        if(pe.st != null) add.step = pe.st; if(pe.sw != null) add.startW = pe.sw;
+        if(Object.keys(add).length){
+          const cur = data.exPrefs[pe.mid] || {};
+          for(const [k2, v2] of Object.entries(add)) if(cur[k2] == null) cur[k2] = v2;   // 選手が設定済みの項目は上書きしない
+          data.exPrefs[pe.mid] = cur;
+        }
+        return pe.mid;   // カタログのIDをそのまま使う（新規作成しない）
+      }
       const found = data.exercises.find(e=> e.name === pe.n);
-      if(found) return found.id;
+      if(found){
+        if(pe.k && !found.kind){ found.kind = pe.k; if(pe.dc) found.dbCount = pe.dc; }   // 選手が器具を未設定のときだけ埋める（上書きしない）
+        if(pe.sw != null && found.startW == null) found.startW = pe.sw;
+        return found.id;
+      }
       const ne = { id: uid(), name: pe.n, body: pe.b || "その他" };
       if(pe.st != null) ne.step = pe.st;
       if(pe.cmp != null) ne.compound = pe.cmp;
       if(pe.uni != null) ne.unilateral = pe.uni;
+      if(pe.k)  ne.kind = pe.k;
+      if(pe.dc) ne.dbCount = pe.dc;
+      if(pe.sw != null) ne.startW = pe.sw;
       data.exercises.push(ne);
       return ne.id;
     });
@@ -2710,28 +2964,54 @@
     document.getElementById("splitSave").disabled = !document.getElementById("splitName").value.trim();
   }
 
-  // ---- add-exercise-to-split sheet ----
-  let addExSplitId=null, addExSel=new Set(), newExBody="胸";
-  function openAddExSheet(splitId){
-    addExSplitId=splitId; addExSel=new Set(); newExBody="胸";
-    const sp=data.splits.find(s=>s.id===splitId);
-    document.getElementById("addExTitle").textContent=(sp?sp.name:"")+" に種目を追加";
-    document.getElementById("newExName").value="";
+  // ---- add-exercise sheet: shared by a regular split and a share-set split ----
+  let addExTo=null, addExSel=new Set(), newExBody="胸";
+  // addExTo = { kind:"split", splitId }                ← 種目タブの分割
+  //         | { kind:"share", shareId, splitId }       ← 共有タブの分割
+
+  function addExTarget(){
+    if(!addExTo) return null;
+    if(addExTo.kind === "share"){
+      const ss = data.shareSets.find(s => s.id === addExTo.shareId);
+      return ss ? (ss.splits.find(x => x.id === addExTo.splitId) || null) : null;
+    }
+    return data.splits.find(s => s.id === addExTo.splitId) || null;
+  }
+  function openAddExSheet(to){
+    addExTo = to; addExSel = new Set(); newExBody = "胸";
+    const sp = addExTarget();
+    let title = (sp ? sp.name : "") + " に種目を追加";
+    if(to.kind === "share"){
+      const ss = data.shareSets.find(s => s.id === to.shareId);
+      title = `${ss ? ss.name : ""}／${sp ? sp.name : ""} に種目を追加`;
+    }
+    document.getElementById("addExTitle").textContent = title;
+    document.getElementById("newExName").value = "";
+    document.getElementById("addExSearch").value = "";
     renderNewExBody(); renderAddExPick();
     document.getElementById("addExSheet").classList.add("open");
   }
-  function closeAddExSheet(){ document.getElementById("addExSheet").classList.remove("open"); addExSplitId=null; }
+  function closeAddExSheet(){ document.getElementById("addExSheet").classList.remove("open"); addExTo = null; }
+  // 追加したあと、開いている画面を描き直す
+  function afterAddEx(){
+    if(addExTo && addExTo.kind === "share") renderShareTab();
+    else { renderSplits(); renderSelects(); renderInsight(); }
+  }
   function renderNewExBody(){
     document.getElementById("newExBody").innerHTML=BODYPARTS.map(b=>
       `<button class="chip ${b===newExBody?'sel':''}" data-newbody="${b}">${b}</button>`).join("");
   }
   function renderAddExPick(){
     const box=document.getElementById("addExPick");
-    const sp=data.splits.find(s=>s.id===addExSplitId);
+    const toKata = s => s.replace(/[ぁ-ゖ]/g, c => String.fromCharCode(c.charCodeAt(0) + 0x60)); // ひらがなでも探せるように
+    const q = toKata(document.getElementById("addExSearch").value.trim());
+    const sp=addExTarget();
     const inSplit=new Set(sp?sp.exIds:[]);
-    const avail=pickableExercises().filter(e=>!inSplit.has(e.id) && !e.archived);
+    const avail=pickableExercises().filter(e=>!inSplit.has(e.id) && !e.archived && (!q || toKata(e.name).includes(q)));
     if(!avail.length){
-      box.innerHTML=`<div class="pick-empty">追加できる既存の種目はありません。<br>上の欄から新しく作ってください。</div>`;
+      box.innerHTML = q
+        ? `<div class="pick-empty">見つかりませんでした。</div>`
+        : `<div class="pick-empty">追加できる既存の種目はありません。<br>上の欄から新しく作ってください。</div>`;
       return;
     }
     const byBody={};
@@ -2750,12 +3030,13 @@
       }
     });
     box.innerHTML=html;
+    document.getElementById("addExSave").textContent = addExSel.size ? `${addExSel.size}種目を追加` : "選んだ種目を追加";
   }
   async function addSelectedToSplit(){
     if(!addExSel.size){ toast("種目を選んでください"); return; }
-    const sp=data.splits.find(s=>s.id===addExSplitId);
+    const sp=addExTarget();
     if(sp){ addExSel.forEach(id=>{ if(!sp.exIds.includes(id)) sp.exIds.push(id); }); }
-    await save(); renderAll(); closeAddExSheet();
+    await save(); afterAddEx(); closeAddExSheet();
     toast(addExSel.size+"種目を追加しました");
   }
   async function createAndAddExercise(){
@@ -2766,10 +3047,10 @@
     if(hit){
       if(hit.retired){
         // 外したカタログ種目と同名 → 新規作成せず、そのカタログ種目をこの分割に復活させる（記録もIDでつながる）
-        const sp = data.splits.find(s => s.id === addExSplitId);
+        const sp = addExTarget();
         if(sp && !sp.exIds.includes(hit.id)) sp.exIds.push(hit.id);
         await save(); inp.value = "";
-        renderAddExPick(); renderSplits(); renderSelects(); renderInsight();
+        renderAddExPick(); afterAddEx();
         toast(`「${name}」を追加しました`);
         return;
       }
@@ -2777,11 +3058,11 @@
     }
     const e={id:uid(),name,body:newExBody};
     data.exercises.push(e);
-    const sp=data.splits.find(s=>s.id===addExSplitId);
+    const sp=addExTarget();
     if(sp && !sp.exIds.includes(e.id)) sp.exIds.push(e.id);
     await save();
     inp.value="";
-    renderAddExPick(); renderSplits(); renderSelects(); renderInsight();
+    renderAddExPick(); afterAddEx();
     toast(`「${name}」を追加しました`);
   }
   async function moveExercise(splitId, exId, dir){
@@ -2824,7 +3105,7 @@
     await save(); renderAll();
   }
 
-  function renderAll(){ renderSplitChips(); renderSelects(); renderInsight(); renderToday(); if(document.getElementById("view-history").classList.contains("active")) renderHistory(); renderSplits(); }
+  function renderAll(){ renderSplitChips(); renderSelects(); renderInsight(); renderToday(); if(document.getElementById("view-history").classList.contains("active")) renderHistory(); renderSplits(); updateShareTab(); }
 
   // ---- actions ----
   async function recordSet(){
@@ -2846,23 +3127,59 @@
   }
 
   // ---- exercise modal ----
+  // 器具に合わせて表示を切り替える（種目タイプ・ダンベルの数・初期の重さ・重さの上げ幅の欄）
+  function syncKindFields(){
+    const k = pickChip("kindChips");
+    document.getElementById("dbCountField").style.display = (k === "dumbbell") ? "" : "none";
+    const stepEl = document.getElementById("exStep");
+    const noStep = (k === "dumbbell" || k === "bodyweight");
+    stepEl.disabled = noStep;
+    if(noStep){ stepEl.value = ""; stepEl.placeholder = (k === "dumbbell") ? "ダンベルの並びで自動" : "自重なので不要"; }
+    else {
+      const auto = editingExId ? inferStep(editingExId) : null;
+      stepEl.placeholder = `自動: ${auto ?? DEFAULT_STEP[k] ?? 2.5}kg`;
+    }
+    const swEl = document.getElementById("exStartW"), swHint = document.getElementById("startWHint");
+    const swPh = { barbell:"20（バーのみ）", dumbbell:"", machine:"選んだ重さ", plate:"0（プレートなし）", assist:"体重−10kgくらい" };
+    if(k === "bodyweight"){
+      swEl.disabled = true; swEl.value = ""; swEl.placeholder = "自重なので不要"; swHint.textContent = "";
+    } else {
+      swEl.disabled = false;
+      if(k === "dumbbell"){
+        const c = parseInt(pickChip("dbCountChips"), 10) || 2;
+        swEl.placeholder = String(2 * c);
+        swHint.textContent = "持った重さの合計で入れます（2kgを2個なら4）。";
+      } else if(k === "assist"){
+        swEl.placeholder = swPh.assist; swHint.textContent = "補助の重さを入れます。";
+      } else {
+        swEl.placeholder = swPh[k] || "器具の目安"; swHint.textContent = "";
+      }
+    }
+  }
   function openExModal(id){
     editingExId=id||null;
-    const ex=id?data.exercises.find(e=>e.id===id):null;
+    const ex=id?getExercise(id):null;
+    const master = id && isMaster(id);
     document.getElementById("exModalTitle").textContent=id?"種目を編集":"種目を追加";
+    document.getElementById("exCatalogNote").style.display = master ? "" : "none";
     document.getElementById("exName").value=ex?ex.name:"";
+    selectChip("kindChips", (ex && ex.kind) || "");          // 未設定なら何も選ばない
+    selectChip("dbCountChips", String((ex && ex.dbCount) || 2));
+    document.getElementById("exStartW").value = (ex && typeof ex.startW === "number") ? ex.startW : "";
     const stepEl=document.getElementById("exStep");
     stepEl.value=(ex && typeof ex.step==="number")?ex.step:"";
-    const auto=ex?inferStep(ex.id):null;
-    stepEl.placeholder=auto!=null?`自動: ${auto}kg`:"自動: 2.5kg";
+    syncKindFields();
     selectedBody=ex?ex.body:"胸";
     renderBodyChips();
     selectChip("compoundChips", (ex && ex.compound===false) ? "単関節" : "多関節");
     selectChip("unilateralChips", (ex && ex.unilateral) ? "片側" : "両側");
-    document.getElementById("exDelete").style.display = id ? "block" : "none";
+    document.getElementById("exDelete").style.display = (id && !master) ? "block" : "none";
     const archiveBtn=document.getElementById("exArchive");
     archiveBtn.style.display = id ? "block" : "none";
     archiveBtn.textContent = (ex && ex.archived) ? "一覧に戻す" : "この種目を一覧から隠す（記録は残ります）";
+    const resetBtn=document.getElementById("exReset");
+    resetBtn.style.display = master ? "block" : "none";
+    resetBtn.disabled = !(data.exPrefs && data.exPrefs[id]);
     document.getElementById("exModal").classList.add("open");
     setTimeout(()=>document.getElementById("exName").focus(),120);
     validateExSave();
@@ -2870,11 +3187,26 @@
   function closeExModal(){ document.getElementById("exModal").classList.remove("open"); editingExId=null; }
   async function toggleExArchive(){
     if(!editingExId) return;
+    if(isMaster(editingExId)){
+      const archived = !(data.exPrefs[editingExId] && data.exPrefs[editingExId].archived);
+      data.exPrefs[editingExId] = data.exPrefs[editingExId] || {};
+      data.exPrefs[editingExId].archived = archived;
+      await save(); renderAll(); closeExModal();
+      toast(archived ? "種目を一覧から隠しました" : "種目を一覧に戻しました");
+      return;
+    }
     const e=data.exercises.find(x=>x.id===editingExId);
     if(!e) return;
     e.archived=!e.archived;
     await save(); renderAll(); closeExModal();
     toast(e.archived ? "種目を一覧から隠しました" : "種目を一覧に戻しました");
+  }
+  async function resetCatalogEx(){
+    if(!editingExId || !isMaster(editingExId)) return;
+    if(!confirm("この種目をカタログの設定に戻しますか？（記録は消えません）")) return;
+    delete data.exPrefs[editingExId];
+    await save(); renderAll(); closeExModal();
+    toast("カタログの設定に戻しました");
   }
   function renderBodyChips(){
     document.getElementById("bodyChips").innerHTML=BODYPARTS.map(b=>
@@ -2884,7 +3216,6 @@
     document.getElementById("exSave").disabled = !document.getElementById("exName").value.trim();
   }
   async function saveEx(){
-    if(editingExId && isMaster(editingExId)) return; // カタログ種目は編集不可（UI上は出さない前提の二重防御）
     const name=document.getElementById("exName").value.trim();
     if(!name) return;
     const stepStr=document.getElementById("exStep").value.trim();
@@ -2892,13 +3223,45 @@
     if(stepStr!==""){ const v=parseFloat(stepStr); if(!isNaN(v) && v>=0) step=v; }
     const compound   = (pickChip("compoundChips")   === "多関節");
     const unilateral = (pickChip("unilateralChips") === "片側");
+    const kind = pickChip("kindChips") || null;
+    const dbCount = (kind === "dumbbell") ? parseInt(pickChip("dbCountChips"), 10) : null;
+    const swStr = document.getElementById("exStartW").value.trim();
+    let startW = null;
+    if(swStr !== "" && kind !== "bodyweight"){ const v = parseFloat(swStr); if(!isNaN(v) && v >= 0) startW = roundW(v); }
+
+    if(editingExId && isMaster(editingExId)){
+      const m = MASTER_EXERCISES.find(e => e.id === editingExId);
+      const v = { name, body: selectedBody, compound, unilateral, kind, dbCount, step, startW };
+      if(name !== m.name && allExercises().some(e => e.id !== m.id && e.name === name)){ toast("同じ名前の種目があります"); return; }
+      const base = { ...m, compound: m.compound !== false, unilateral: !!m.unilateral };
+      const p = {};
+      for(const [key, val] of Object.entries(v)){
+        if(val == null) continue;                 // 空欄・未選択はカタログの値を使う
+        if(base[key] !== val) p[key] = val;       // カタログと違う項目だけ保存
+      }
+      if(data.exPrefs[m.id] && data.exPrefs[m.id].archived) p.archived = true;
+      if(Object.keys(p).length) data.exPrefs[m.id] = p; else delete data.exPrefs[m.id];
+      await save(); renderAll(); closeExModal();
+      toast("種目を更新しました（この端末だけ）");
+      return;
+    }
+
     if(editingExId){
       const e=data.exercises.find(x=>x.id===editingExId);
-      if(e){ e.name=name; e.body=selectedBody; e.compound=compound; e.unilateral=unilateral; if(step==null) delete e.step; else e.step=step; }
+      if(e){
+        e.name=name; e.body=selectedBody; e.compound=compound; e.unilateral=unilateral;
+        if(step==null) delete e.step; else e.step=step;
+        if(kind==null) delete e.kind; else e.kind=kind;
+        if(dbCount==null) delete e.dbCount; else e.dbCount=dbCount;
+        if(startW==null) delete e.startW; else e.startW=startW;
+      }
       toast("種目を更新しました");
     }else{
       const newEx={id:uid(),name,body:selectedBody,compound,unilateral};
       if(step!=null) newEx.step=step;
+      if(kind!=null) newEx.kind=kind;
+      if(dbCount!=null) newEx.dbCount=dbCount;
+      if(startW!=null) newEx.startW=startW;
       data.exercises.push(newEx);
       toast("種目を追加しました");
     }
@@ -2934,6 +3297,7 @@
     document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.view===v));
     if(v==="history"){ historyLimit=30; renderHistory(); }
     if(v==="split") renderSplits();
+    if(v==="share") renderShareTab();
     window.scrollTo(0,0);
   }
 
@@ -2963,7 +3327,10 @@
       const c=e.target.closest("[data-body]"); if(!c) return;
       selectedBody=c.dataset.body; renderBodyChips();
     });
-    ["compoundChips","unilateralChips"].forEach(wireSingleSelectChips);
+    ["compoundChips","unilateralChips","kindChips","dbCountChips"].forEach(wireSingleSelectChips);
+    document.getElementById("kindChips").addEventListener("click", syncKindFields);
+    document.getElementById("dbCountChips").addEventListener("click", syncKindFields);
+    document.getElementById("exReset").addEventListener("click", resetCatalogEx);
 
     document.getElementById("openAddSplit").addEventListener("click",()=>openSplitModal(null));
     document.getElementById("splitCancel").addEventListener("click",closeSplitModal);
@@ -2974,6 +3341,7 @@
     document.getElementById("addExSave").addEventListener("click",addSelectedToSplit);
     document.getElementById("newExAdd").addEventListener("click",createAndAddExercise);
     document.getElementById("newExName").addEventListener("keydown",e=>{ if(e.key==="Enter") createAndAddExercise(); });
+    document.getElementById("addExSearch").addEventListener("input", renderAddExPick);
     document.getElementById("addExSheet").addEventListener("click",e=>{ if(e.target.id==="addExSheet") closeAddExSheet(); });
     document.getElementById("newExBody").addEventListener("click",e=>{
       const c=e.target.closest("[data-newbody]"); if(!c) return;
@@ -2984,6 +3352,7 @@
       const id=it.dataset.pick;
       if(addExSel.has(id)) addExSel.delete(id); else addExSel.add(id);
       it.classList.toggle("on");
+      document.getElementById("addExSave").textContent = addExSel.size ? `${addExSel.size}種目を追加` : "選んだ種目を追加";
     });
     document.getElementById("exDelete").addEventListener("click",()=>{ if(editingExId) delEx(editingExId); });
     document.getElementById("exArchive").addEventListener("click",toggleExArchive);
@@ -2992,43 +3361,12 @@
     document.getElementById("addSetCancel").addEventListener("click", closeAddSetModal);
     document.getElementById("addSetModal").addEventListener("click", e=>{ if(e.target.id==="addSetModal") closeAddSetModal(); });
 
-    document.getElementById("shareSetAdd").addEventListener("click", addShareSet);
-    document.getElementById("shareClose").addEventListener("click", closeShareModal);
-    document.getElementById("shareSetList").addEventListener("click", e=>{
-      const ed=e.target.closest("[data-ss-edit]");  if(ed){ openShareEditor(ed.dataset.ssEdit); return; }
-      const dl=e.target.closest("[data-ss-del]");   if(dl){ delShareSet(dl.dataset.ssDel); return; }
-      const cp=e.target.closest("[data-ss-copy]");  if(cp){
-        const ss=data.shareSets.find(s=>s.id===cp.dataset.ssCopy); if(!ss) return;
-        const url=encodeShareSet(ss);
-        (navigator.clipboard?.writeText(url) ?? Promise.reject()).then(()=>toast("リンクをコピーしました"),
-          ()=>{ const i=cp.closest(".split-item").querySelector("input"); i.select(); document.execCommand("copy"); toast("リンクをコピーしました"); });
-        return;
-      }
+    const shareTabEl = document.getElementById("shareTab");
+    shareTabEl.addEventListener("click", e => {
+      const b = e.target.closest("[data-sh]"); if(b) shAction(b.dataset.sh, b);
     });
-    document.getElementById("shareSetList").addEventListener("input", e=>{
-      const nm=e.target.closest("[data-ss-name]");
-      if(nm){ const ss=data.shareSets.find(s=>s.id===nm.dataset.ssName); if(ss){ ss.name = nm.value.trim()||ss.name; save(); } }
-    });
-    document.getElementById("shareMenuModal").addEventListener("click", e=>{ if(e.target.id==="shareMenuModal") closeShareModal(); });
-
-    document.getElementById("ssSplitAdd").addEventListener("click", ssAddSplit);
-    document.getElementById("ssDone").addEventListener("click", closeShareEditor);
-    document.getElementById("ssName").addEventListener("input", e=> ssRenameSet(e.target.value));
-    document.getElementById("ssSplitList").addEventListener("click", e=>{
-      const ad=e.target.closest("[data-ssex-add]");   if(ad){ openSsExPick(ad.dataset.ssexAdd); return; }
-      const xd=e.target.closest("[data-ssex-del]");   if(xd){ const [sp,ex]=xd.dataset.ssexDel.split(":"); ssRemoveEx(sp,ex); return; }
-      const sd=e.target.closest("[data-sssplit-del]");if(sd){ ssDelSplit(sd.dataset.sssplitDel); return; }
-    });
-    document.getElementById("ssSplitList").addEventListener("input", e=>{
-      const pi = e.target.closest("[data-ssp]");
-      if(pi){ const [spId, exId] = pi.dataset.sspk.split(":"); ssSetPresc(spId, exId, pi.dataset.ssp, pi.value); return; }
-      const nm=e.target.closest("[data-sssplit-name]"); if(nm) ssRenameSplit(nm.dataset.sssplitName, nm.value);
-    });
-    document.getElementById("shareEditModal").addEventListener("click", e=>{ if(e.target.id==="shareEditModal") closeShareEditor(); });
-
-    document.getElementById("ssExPickAdd").addEventListener("click", ssExPickAdd);
-    document.getElementById("ssExPickCancel").addEventListener("click", closeSsExPick);
-    document.getElementById("ssExPickModal").addEventListener("click", e=>{ if(e.target.id==="ssExPickModal") closeSsExPick(); });
+    shareTabEl.addEventListener("input",  e => { const n = e.target.closest("[data-sh-name]"); if(n) shRename(n.dataset.shName, n.value); });
+    shareTabEl.addEventListener("change", e => { if(e.target.closest("[data-sh-name]")) renderShareTab(); });
 
     document.getElementById("importConfirm").addEventListener("click", async ()=>{
       if(importPayload){ await importMenu(importPayload); toast("メニューを取り込みました"); }
@@ -3042,6 +3380,18 @@
     document.getElementById("feedbackBtn").addEventListener("click",openFeedback);
     document.getElementById("feedbackClose").addEventListener("click",closeFeedback);
     document.getElementById("feedbackModal").addEventListener("click",e=>{ if(e.target.id==="feedbackModal") closeFeedback(); });
+
+    document.getElementById("tutTrack").addEventListener("scroll", () => requestAnimationFrame(updateTutorial));
+    document.getElementById("tutNext").addEventListener("click", () => {
+      const t = document.getElementById("tutTrack"), i = tutIndex(), last = document.querySelectorAll("#tutDots span").length - 1;
+      if(i >= last) closeTutorial(); else t.scrollTo({ left: (i + 1) * t.clientWidth, behavior: "smooth" });
+    });
+    document.getElementById("tutSkip").addEventListener("click", closeTutorial);
+
+    document.getElementById("helpBtn").addEventListener("click", openHelp);
+    document.getElementById("helpClose").addEventListener("click", closeHelp);
+    document.getElementById("helpModal").addEventListener("click", e => { if(e.target.id === "helpModal") closeHelp(); });
+    document.getElementById("helpTutorial").addEventListener("click", () => { closeHelp(); openTutorial(); });
     document.getElementById("userAddBtn").addEventListener("click",commitUser);
     document.getElementById("userEditCancel").addEventListener("click",()=>{ editingUserId=null; resetUserAddBar(); });
     document.getElementById("userNameInput").addEventListener("keydown",e=>{ if(e.key==="Enter") commitUser(); });
@@ -3068,9 +3418,8 @@
       const em=e.target.closest("[data-editmode]"); if(em){ editModeSplit = em.dataset.editmode || null; renderSplits(); return; }
       const lm=e.target.closest("[data-loadmore]"); if(lm){ historyLimit+=30; renderHistory(); return; }
       const as=e.target.closest("[data-addset]"); if(as){ openAddSetModal(as.dataset.addset); return; }
-      const sm=e.target.closest("[data-sharemenu]"); if(sm){ openShareModal(); return; }
       const he=e.target.closest("[data-histedit]"); if(he){ editHistDay = editHistDay===he.dataset.histedit ? null : he.dataset.histedit; renderHistory(); return; }
-      const addx=e.target.closest("[data-addex]"); if(addx){ openAddExSheet(addx.dataset.addex); return; }
+      const addx=e.target.closest("[data-addex]"); if(addx){ openAddExSheet({ kind:"split", splitId: addx.dataset.addex }); return; }
       const unl=e.target.closest("[data-unlink]"); if(unl){ unlinkExercise(unl.dataset.sp, unl.dataset.unlink); return; }
       const mu=e.target.closest("[data-moveup]"); if(mu){ moveExercise(mu.dataset.sp, mu.dataset.moveup, -1); return; }
       const md=e.target.closest("[data-movedown]"); if(md){ moveExercise(md.dataset.sp, md.dataset.movedown, 1); return; }
@@ -3118,6 +3467,7 @@
     renderUserPill();
     renderAll();
     await maybeImportMenu();
+    if(!meta.tutorialSeen) openTutorial();
     if(backend==="memory"){
       document.getElementById("noSave").classList.add("show");
     } else if(recovered){
